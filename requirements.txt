@@ -5,3 +5,4 @@ pytz
 plotly
 folium
 streamlit-folium
+streamlit-option-menu
