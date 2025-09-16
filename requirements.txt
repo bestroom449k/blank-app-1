@@ -11,4 +11,3 @@ streamlit-echarts>=0.4.0
 tzdata>=2024.1
 kaggle>=1.6.14  # (선택) Kaggle API 사용 시 필요
 statsmodels>=0.14.2  # seaborn regplot lowess 옵션용
-statsmodels>=0.14
