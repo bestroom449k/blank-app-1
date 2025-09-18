@@ -47,32 +47,33 @@ This app can download datasets from Kaggle directly if `kaggle` package and cred
 
 ---
 
+## New analytics in this template
+
+- Yearly temperature rise (YoY): In the Public Data tab, the NASA GISTEMP monthly anomalies are aggregated by year and a bar chart shows year-over-year change (°C). Positive bars indicate warming vs previous year.
+- Snow depth by temperature × year: In the User Data tab, map your date/temperature/snow-depth columns. Choose bin width for temperature (e.g., 2°C) and aggregation (average or sum). The app renders a heatmap of Year × Temperature-bin with snow depth as color, plus drill-down:
+   - Pick a year to see snow by temperature-bin
+   - Pick a temperature-bin to see snow trend over years
+
+Tips
+- Ensure temperature and snow-depth columns are numeric or convertible. Non-numeric entries are dropped.
+- If you have groups (e.g., station, region), select a group column to compare groups one at a time in the snow view.
+
 ## Full Docker stack: Postgres + Metabase + Streamlit + Loader
 
 This repo now includes a compose stack that loads real data into Postgres and exposes Metabase for an interactive dashboard UI.
 
 What you get
-- Postgres 16 (port 5432) with two tables and one view:
    - nasa_gistemp_monthly(date, value, metric)
    - worldbank_indicators(country, indicator, date, value)
-   - vw_pisa_vs_temp (JOIN of PISA indicators and annualized NASA anomalies)
 - Metabase at http://localhost:3000 to explore and build dashboards
-- Your existing Streamlit app at http://localhost:8501
 - A one-shot loader container that fetches real data from NASA GISTEMP and World Bank EdStats APIs and upserts into Postgres
 
-Quick start (Windows cmd)
 1) Build and start everything
-```
 docker compose up -d --build
-```
 2) Wait ~20–60s for db to be healthy and loader to finish. Check logs if needed:
-```
 docker logs blankapp_loader --tail=100
 ```
 3) Open Metabase: http://localhost:3000
-    - Initial setup (email/password of your choice)
-    - Add a database connection:
-       - Database: Postgres
        - Host: db
        - Port: 5432
        - DB name: appdb
@@ -80,11 +81,7 @@ docker logs blankapp_loader --tail=100
        - Password: apppassword
     - After saving, browse the tables and view to create questions/dashboards.
 
-4) Open Streamlit: http://localhost:8501
-
 Bring the stack down
-```
-docker compose down
 ```
 
 Environment knobs (optional)
