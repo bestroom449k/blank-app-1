@@ -73,27 +73,23 @@ def load_noaa_mlo_co2_monthly() -> pd.DataFrame:
     """NOAA Mauna Loa 월별 CO₂ 농도(ppm) 로드"""
     url = "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.csv"
     resp = robust_get(url)
-    # 주석(#) 라인 스킵
-    df = pd.read_csv(io.StringIO(resp.text), comment="#", header=None)
-    # 문서 기준 컬럼: year, month, decimal_date, average, interpolated, trend, days
-    df = df.rename(
-        columns={
-            0: "year",
-            1: "month",
-            2: "decimal_date",
-            3: "average",
-            4: "interpolated",
-            5: "trend",
-            6: "days",
-        }
-    )
+    # 주석(#) 라인은 스킵하고, 첫 비주석 라인을 헤더로 사용
+    df = pd.read_csv(io.StringIO(resp.text), comment="#")
+    # 기대 컬럼: year, month, decimal_date, average, interpolated, trend, days
+    cols_lower = {str(c).lower().strip(): c for c in df.columns}
+    year_col = cols_lower.get("year")
+    month_col = cols_lower.get("month")
+    # trend(추세) 열이 권장. 없으면 average로 대체
+    trend_col = cols_lower.get("trend") or cols_lower.get("average")
+    if not (year_col and month_col and trend_col):
+        raise RuntimeError("예상 컬럼(year, month, trend/average)을 찾지 못했습니다.")
     df["date"] = pd.to_datetime(
-        df["year"].astype(int).astype(str)
+        df[year_col].astype(int).astype(str)
         + "-"
-        + df["month"].astype(int).astype(str).str.zfill(2)
+        + df[month_col].astype(int).astype(str).str.zfill(2)
         + "-15"
     )
-    df["co2_ppm"] = pd.to_numeric(df["trend"], errors="coerce")  # 결측 시 trend 사용 권장
+    df["co2_ppm"] = pd.to_numeric(df[trend_col], errors="coerce")  # 결측 시 trend 사용 권장
     out = (
         df.dropna(subset=["co2_ppm"])[["date", "co2_ppm"]]
         .sort_values("date")
@@ -145,21 +141,46 @@ def load_country_temperature_change() -> pd.DataFrame:
     """Berkeley Earth 기반 국가별 연도별 온도 변화(°C). OWID 정리본 사용.
     컬럼 예시: Entity, Code(ISO3), Year, Temperature change from 1850-1900 (°C)
     """
-    url = (
-        "https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/Temperature%20change%20-%20Berkeley%20Earth/"
-        "Temperature%20change%20-%20Berkeley%20Earth.csv"
-    )
-    resp = robust_get(url)
-    df = pd.read_csv(io.StringIO(resp.text))
+    # URL 후보(리포 구조 변경 대비)
+    url_candidates = [
+        "https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/Temperature%20change%20-%20Berkeley%20Earth/Temperature%20change%20-%20Berkeley%20Earth.csv",
+        # 대체 경로들 (OWID 데이터 리포 개편 시 사용)
+        "https://raw.githubusercontent.com/owid/owid-data/master/processed/berkeley_temperature_change/berkeley_temperature_change.csv",
+        "https://raw.githubusercontent.com/owid/owid-data/master/processed/temperature_change/temperature_change.csv",
+    ]
+    df = None
+    last_err: Optional[Exception] = None
+    for u in url_candidates:
+        try:
+            resp = robust_get(u)
+            _df = pd.read_csv(io.StringIO(resp.text))
+            if not _df.empty:
+                df = _df
+                break
+        except Exception as e:
+            last_err = e
+            continue
+    if df is None:
+        raise RuntimeError(f"국가별 온도 변화 데이터 로드 실패: {last_err}")
+
     # 유연한 컬럼 탐색
-    col_entity = next((c for c in df.columns if c.lower() in ("entity", "country", "location")), None)
-    col_code = next((c for c in df.columns if c.lower() in ("code", "iso3", "iso_code")), None)
-    col_year = next((c for c in df.columns if c.lower() == "year"), None)
-    value_cols = [c for c in df.columns if c not in (col_entity, col_code, col_year)]
-    numeric_candidates = [c for c in value_cols if pd.api.types.is_numeric_dtype(df[c])]
-    if not (col_entity and col_code and col_year and numeric_candidates):
-        raise RuntimeError("Unexpected columns in temperature change dataset")
-    value_col = numeric_candidates[-1]
+    cols = [str(c) for c in df.columns]
+    lowmap = {c.lower().strip(): c for c in cols}
+    col_entity = lowmap.get("entity") or lowmap.get("country") or lowmap.get("location")
+    col_code = lowmap.get("code") or lowmap.get("iso3") or lowmap.get("iso_code") or lowmap.get("iso")
+    col_year = lowmap.get("year")
+    # 온도 변화 값 칼럼 후보(숫자형, 이름에 temp/temperature/change 포함 우선)
+    numeric_cols = [c for c in cols if pd.api.types.is_numeric_dtype(df[c])]
+    pref = [c for c in numeric_cols if any(k in c.lower() for k in ["temp", "temperature", "change"])]
+    if pref:
+        value_col = pref[-1]
+    elif numeric_cols:
+        value_col = numeric_cols[-1]
+    else:
+        raise RuntimeError("온도 변화 값 칼럼을 찾지 못했습니다.")
+    if not (col_entity and col_code and col_year and value_col):
+        # 일부 데이터셋은 code가 없을 수 있음 → entity만으로도 진행 (지도엔 code 필요)
+        raise RuntimeError("국가/연도/값 컬럼 식별 실패")
     slim = df[[col_entity, col_code, col_year, value_col]].rename(
         columns={col_entity: "entity", col_code: "code", col_year: "year", value_col: "temp_change"}
     )
