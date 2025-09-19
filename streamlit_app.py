@@ -478,15 +478,22 @@ with tab3:
     try:
         df_temp_c = load_country_temperature_change()
     except Exception as e:
-        st.error(f"온도 데이터 로드 실패: {e}")
+        # Kaggle 미설치 시에는 명확한 에러 문구로 안내
+        if not KAGGLE_AVAILABLE:
+            st.error("국가별 온도 데이터 로드 실패: Kaggle 라이브러리가 설치되어 있지 않습니다.")
+        else:
+            st.error(f"온도 데이터 로드 실패: {e}")
+            st.info("Kaggle 인증이 필요할 수 있습니다. Kaggle 탭에서 kaggle.json 업로드 또는 환경변수를 설정하세요.")
         df_temp_c = None
-    dl_dir = os.path.join(os.getcwd(), "kaggle_data")
-    csv_files = [f for f in os.listdir(dl_dir)] if os.path.isdir(dl_dir) else []
-    csv_files = [f for f in csv_files if f.lower().endswith(".csv")]
-    up_alt = st.file_uploader("(대안) 교육 성취 CSV 직접 업로드", type=["csv"], accept_multiple_files=False)
-    if not csv_files and up_alt is None:
-        st.info("kaggle_data 폴더에 CSV가 없습니다. Kaggle 탭에서 먼저 다운로드하거나, 위에 CSV를 업로드하세요.")
-    else:
+
+    if df_temp_c is not None and len(df_temp_c):
+        dl_dir = os.path.join(os.getcwd(), "kaggle_data")
+        csv_files = [f for f in os.listdir(dl_dir)] if os.path.isdir(dl_dir) else []
+        csv_files = [f for f in csv_files if f.lower().endswith(".csv")]
+        up_alt = st.file_uploader("(대안) 교육 성취 CSV 직접 업로드", type=["csv"], accept_multiple_files=False)
+        if not csv_files and up_alt is None:
+            st.info("kaggle_data 폴더에 CSV가 없습니다. Kaggle 탭에서 먼저 다운로드하거나, 위에 CSV를 업로드하세요.")
+        else:
         df_edu_raw = None
         if up_alt is not None:
             try:
