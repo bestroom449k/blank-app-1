@@ -450,19 +450,22 @@ with tab2:
         df_country = load_country_temperature_change()
     except Exception as e:
         st.error(f"국가별 온도 데이터 로드 실패: {e}")
-        st.stop()
-    df_country = df_country.copy()
-    df_country["date"] = pd.to_datetime(df_country["date"])  # 표준화
-    years = sorted(df_country["date"].dt.year.unique().tolist())
-    if years:
-        sel_year = st.slider("연도 선택", min_value=int(min(years)), max_value=int(max(years)), value=int(max(years)), step=1)
-        fig_map = choropleth_by_year(df_country, sel_year, f"국가별 평균기온(°C) - {sel_year}")
-        st.plotly_chart(fig_map, use_container_width=True)
-        dl_df = df_country.rename(columns={"entity": "group"})[["date", "value", "group"]].sort_values(["date", "group"])
-        download_button_for_df(dl_df, "CSV 다운로드(국가별 평균기온)", "country_avg_temperature_annual.csv")
+        df_country = None
+    if df_country is not None and len(df_country):
+        df_country = df_country.copy()
+        df_country["date"] = pd.to_datetime(df_country["date"])  # 표준화
+        years = sorted(df_country["date"].dt.year.unique().tolist())
+        if years:
+            sel_year = st.slider("연도 선택", min_value=int(min(years)), max_value=int(max(years)), value=int(max(years)), step=1)
+            fig_map = choropleth_by_year(df_country, sel_year, f"국가별 평균기온(°C) - {sel_year}")
+            st.plotly_chart(fig_map, use_container_width=True)
+            dl_df = df_country.rename(columns={"entity": "group"})[["date", "value", "group"]].sort_values(["date", "group"])
+            download_button_for_df(dl_df, "CSV 다운로드(국가별 평균기온)", "country_avg_temperature_annual.csv")
+        else:
+            st.info("표시할 연도가 없습니다.")
+        st.caption("참고: 일부 국가/연도는 값이 없을 수 있습니다.")
     else:
-        st.info("표시할 연도가 없습니다.")
-    st.caption("참고: 일부 국가/연도는 값이 없을 수 있습니다.")
+        st.info("실제 데이터를 사용하려면 Kaggle 인증이 필요합니다. Kaggle 탭에서 kaggle.json 업로드 또는 환경변수를 설정하세요. Docker 실행을 권장합니다.")
 
 with tab3:
     st.subheader("기온과 학업 성취 상관관계 (실제 데이터)")
@@ -476,20 +479,28 @@ with tab3:
         df_temp_c = load_country_temperature_change()
     except Exception as e:
         st.error(f"온도 데이터 로드 실패: {e}")
-        st.stop()
+        df_temp_c = None
     dl_dir = os.path.join(os.getcwd(), "kaggle_data")
     csv_files = [f for f in os.listdir(dl_dir)] if os.path.isdir(dl_dir) else []
     csv_files = [f for f in csv_files if f.lower().endswith(".csv")]
-    if not csv_files:
-        st.info("kaggle_data 폴더에 CSV가 없습니다. Kaggle 탭에서 먼저 다운로드하세요.")
+    up_alt = st.file_uploader("(대안) 교육 성취 CSV 직접 업로드", type=["csv"], accept_multiple_files=False)
+    if not csv_files and up_alt is None:
+        st.info("kaggle_data 폴더에 CSV가 없습니다. Kaggle 탭에서 먼저 다운로드하거나, 위에 CSV를 업로드하세요.")
     else:
-        sel_file = st.selectbox("학업 성취 CSV 선택", csv_files)
-        edu_path = os.path.join(dl_dir, sel_file)
-        try:
-            df_edu_raw = pd.read_csv(edu_path)
-        except Exception as e:
-            st.error(f"CSV 읽기 실패: {e}")
-            df_edu_raw = None
+        df_edu_raw = None
+        if up_alt is not None:
+            try:
+                df_edu_raw = pd.read_csv(up_alt)
+            except Exception as e:
+                st.error(f"업로드 CSV 읽기 실패: {e}")
+        else:
+            sel_file = st.selectbox("학업 성취 CSV 선택", csv_files)
+            edu_path = os.path.join(dl_dir, sel_file)
+            try:
+                df_edu_raw = pd.read_csv(edu_path)
+            except Exception as e:
+                st.error(f"CSV 읽기 실패: {e}")
+                df_edu_raw = None
         if df_edu_raw is not None:
             st.write("행/열:", df_edu_raw.shape)
             st.dataframe(df_edu_raw.head(50))
@@ -508,38 +519,44 @@ with tab3:
             edu = edu.dropna(subset=["entity", "year", "score"]).copy()
 
             # 연도 범위 선택
-            y_min = int(max(edu["year"].min(), df_temp_c["year"].min())) if len(edu) and len(df_temp_c) else 2000
-            y_max = int(min(edu["year"].max(), df_temp_c["year"].max())) if len(edu) and len(df_temp_c) else 2018
+            if df_temp_c is not None and len(df_temp_c) and len(edu):
+                y_min = int(max(edu["year"].min(), df_temp_c["year"].min()))
+                y_max = int(min(edu["year"].max(), df_temp_c["year"].max()))
+            else:
+                y_min, y_max = 2000, 2018
             if y_min > y_max:
                 y_min, y_max = y_max, y_max
             year_sel = st.slider("연도 선택(상관계수 계산 연도)", min_value=y_min, max_value=y_max, value=y_max, step=1)
 
-            # 동일 연도 병합(국가명 기준)
-            temp_y = df_temp_c[df_temp_c["year"] == year_sel][["entity", "value"]].rename(columns={"value": "temp"})
-            edu_y = edu[edu["year"] == year_sel][["entity", "score"]]
-            merged = pd.merge(temp_y, edu_y, on="entity", how="inner")
-            st.write(f"병합된 국가 수: {len(merged)}")
-            if len(merged) < 5:
-                st.warning("충분한 국가 수가 없습니다. 다른 연도를 선택하거나 매핑을 조정해 보세요.")
+            if df_temp_c is None:
+                st.warning("온도 데이터가 없어 상관관계를 계산할 수 없습니다. Kaggle 인증 후 다시 시도하세요.")
             else:
-                # 피어슨 상관계수
-                try:
-                    r = float(np.corrcoef(merged["temp"], merged["score"])[0, 1])
-                except Exception:
-                    r = float("nan")
-                st.metric("피어슨 상관계수 r", f"{r:.3f}" if pd.notna(r) else "NaN")
-                # 산점도 + 단순 선형회귀선
-                fig_sc = px.scatter(merged, x="temp", y="score", hover_name="entity", title=f"{year_sel}년: 평균기온(°C) vs 학업 성취")
-                # 회귀선 수동 추가
-                try:
-                    m, b = np.polyfit(merged["temp"].astype(float), merged["score"].astype(float), 1)
-                    xfit = np.linspace(float(merged["temp"].min()), float(merged["temp"].max()), 50)
-                    yfit = m * xfit + b
-                    fig_sc.add_trace(go.Scatter(x=xfit, y=yfit, mode="lines", name="회귀선"))
-                except Exception:
-                    pass
-                fig_sc.update_layout(xaxis_title="평균기온(°C)", yaxis_title="학업 성취(점수)")
-                st.plotly_chart(fig_sc, use_container_width=True)
+                # 동일 연도 병합(국가명 기준)
+                temp_y = df_temp_c[df_temp_c["year"] == year_sel][["entity", "value"]].rename(columns={"value": "temp"})
+                edu_y = edu[edu["year"] == year_sel][["entity", "score"]]
+                merged = pd.merge(temp_y, edu_y, on="entity", how="inner")
+                st.write(f"병합된 국가 수: {len(merged)}")
+                if len(merged) < 5:
+                    st.warning("충분한 국가 수가 없습니다. 다른 연도를 선택하거나 매핑을 조정해 보세요.")
+                else:
+                    # 피어슨 상관계수
+                    try:
+                        r = float(np.corrcoef(merged["temp"], merged["score"])[0, 1])
+                    except Exception:
+                        r = float("nan")
+                    st.metric("피어슨 상관계수 r", f"{r:.3f}" if pd.notna(r) else "NaN")
+                    # 산점도 + 단순 선형회귀선
+                    fig_sc = px.scatter(merged, x="temp", y="score", hover_name="entity", title=f"{year_sel}년: 평균기온(°C) vs 학업 성취")
+                    # 회귀선 수동 추가
+                    try:
+                        m, b = np.polyfit(merged["temp"].astype(float), merged["score"].astype(float), 1)
+                        xfit = np.linspace(float(merged["temp"].min()), float(merged["temp"].max()), 50)
+                        yfit = m * xfit + b
+                        fig_sc.add_trace(go.Scatter(x=xfit, y=yfit, mode="lines", name="회귀선"))
+                    except Exception:
+                        pass
+                    fig_sc.update_layout(xaxis_title="평균기온(°C)", yaxis_title="학업 성취(점수)")
+                    st.plotly_chart(fig_sc, use_container_width=True)
 
 with tab4:
     st.subheader("사용자 입력 대시보드 (설명 기반)")
@@ -549,7 +566,7 @@ with tab4:
     df_desc, df_desc_std = build_description_based_dataset()
     metrics = ["전체"] + sorted(df_desc["지표"].unique().tolist())
     sel_metric = st.selectbox("지표 필터", metrics, index=0)
-    show_sankey = st.checkbox("관계 흐름(샌키) 보기", value=True)
+    show_sankey = st.checkbox("관계 흐름(상키) 보기", value=True)
 
     if sel_metric != "전체":
         view_df = df_desc[df_desc["지표"] == sel_metric].copy()
