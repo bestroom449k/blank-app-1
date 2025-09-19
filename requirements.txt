@@ -4,3 +4,4 @@ numpy>=1.26
 requests>=2.31
 plotly>=5.24
 tzdata>=2024.1
+kaggle>=1.6.17

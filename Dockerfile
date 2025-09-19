@@ -10,7 +10,8 @@ WORKDIR /app
 
 # Copy requirements first for better caching
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    mkdir -p /root/.kaggle && chmod 700 /root/.kaggle
 
 # Copy app
 COPY streamlit_app.py ./
@@ -24,5 +25,7 @@ ENV STREAMLIT_BROWSER_GATHERUSAGESTATS=false \
     STREAMLIT_SERVER_ADDRESS=0.0.0.0
 
 EXPOSE 8501
+
+ENV KAGGLE_CONFIG_DIR=/root/.kaggle
 
 CMD ["streamlit", "run", "streamlit_app.py"]

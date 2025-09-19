@@ -12,6 +12,13 @@ import requests
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+try:
+    # Kaggle is optional; only import if installed
+    from kaggle import api as kaggle_api  # type: ignore
+    KAGGLE_AVAILABLE = True
+except Exception:
+    kaggle_api = None  # type: ignore
+    KAGGLE_AVAILABLE = False
 
 
 # -----------------------------
@@ -352,7 +359,8 @@ col_c.metric("전지구 이상기온(최근, °C)", f"{gt_last:+.2f}" if gt_last
 st.markdown("---")
 
 # 탭 구성
-tab1, tab2, tab3 = st.tabs(["시계열", "세계 지도", "사용자 설명"])
+extra_tabs = ["Kaggle"] if KAGGLE_AVAILABLE else []
+tab1, tab2, tab3, *rest = st.tabs(["시계열", "세계 지도", "사용자 설명", *extra_tabs])
 
 with tab1:
     st.subheader("시계열 지표")
@@ -464,4 +472,140 @@ st.markdown(
 """
 )
 
-# Kaggle API는 본 앱에서 사용하지 않습니다. 필요 시 kaggle.json 설정 및 kaggle CLI로 인증 후 사용하세요.
+############################################
+# Kaggle 탭 (선택, 라이브러리 설치 시 표시)
+############################################
+if KAGGLE_AVAILABLE and rest:
+    with rest[0]:
+        st.subheader("Kaggle 데이터셋 다운로드 및 미리보기")
+        st.caption("주의: Kaggle 계정의 API 토큰이 필요합니다. 이 앱은 업로드된 kaggle.json을 세션 임시 폴더로 설정하여 인증합니다.")
+
+        # 인증 준비: 파일 업로드 또는 기존 Kaggle.json 활용
+        up = st.file_uploader("kaggle.json 업로드", type=["json"], accept_multiple_files=False)
+        kaggle_info = None
+        config_dir = os.path.join(os.getcwd(), ".kaggle")
+        os.makedirs(config_dir, exist_ok=True)
+        config_path = os.path.join(config_dir, "kaggle.json")
+
+        if up is not None:
+            try:
+                content = up.read()
+                with open(config_path, "wb") as f:
+                    f.write(content)
+                try:
+                    os.chmod(config_path, 0o600)
+                except Exception:
+                    pass
+                os.environ["KAGGLE_CONFIG_DIR"] = config_dir
+                kaggle_info = "업로드한 kaggle.json으로 인증 설정 완료"
+            except Exception as e:
+                st.error(f"kaggle.json 저장 실패: {e}")
+
+        # 워크스페이스 루트에 Kaggle.json이 존재하면 사용
+        if kaggle_info is None:
+            repo_kaggle = os.path.join(os.getcwd(), "Kaggle.json")
+            if os.path.exists(repo_kaggle):
+                try:
+                    with open(repo_kaggle, "rb") as src, open(config_path, "wb") as dst:
+                        dst.write(src.read())
+                    try:
+                        os.chmod(config_path, 0o600)
+                    except Exception:
+                        pass
+                    os.environ["KAGGLE_CONFIG_DIR"] = config_dir
+                    kaggle_info = "리포지토리의 Kaggle.json으로 인증 설정 완료"
+                except Exception as e:
+                    st.warning(f"리포지토리 Kaggle.json 사용 실패: {e}")
+
+        # 환경변수 인증이 이미 있는 경우 안내
+        if kaggle_info is None and os.getenv("KAGGLE_USERNAME") and os.getenv("KAGGLE_KEY"):
+            kaggle_info = "환경변수(KAGGLE_USERNAME/KEY)로 인증 사용"
+
+        if kaggle_info:
+            st.success(kaggle_info)
+        else:
+            st.info("kaggle.json 업로드 또는 환경변수 설정이 필요합니다.")
+
+        dataset_slug = st.text_input("데이터셋 슬러그 (owner/dataset)", value="zynicide/wine-reviews")
+        col_dl1, col_dl2 = st.columns([1, 1])
+        with col_dl1:
+            if st.button("파일 목록 조회"):
+                try:
+                    # Top-level optional import already set KAGGLE_AVAILABLE and kaggle_api
+                    try:
+                        kaggle_api.authenticate()  # type: ignore[attr-defined]
+                    except Exception:
+                        pass
+                    files = kaggle_api.dataset_list_files(dataset_slug)  # type: ignore[union-attr]
+                    st.write("파일 목록:", [f.name for f in files.files])
+                except Exception as e:
+                    st.error(f"파일 목록 조회 실패: {e}")
+        with col_dl2:
+            if st.button("데이터셋 다운로드"):
+                try:
+                    # 다운로드 디렉토리
+                    dl_dir = os.path.join(os.getcwd(), "kaggle_data")
+                    os.makedirs(dl_dir, exist_ok=True)
+                    try:
+                        kaggle_api.authenticate()  # type: ignore[attr-defined]
+                    except Exception:
+                        pass
+                    kaggle_api.dataset_download_files(dataset_slug, path=dl_dir, unzip=True, quiet=False)  # type: ignore[union-attr]
+                    st.success(f"다운로드 완료: {dl_dir}")
+                except Exception as e:
+                    st.error(f"다운로드 실패: {e}")
+
+        # CSV 미리보기
+        dl_dir = os.path.join(os.getcwd(), "kaggle_data")
+        if os.path.isdir(dl_dir):
+            csv_files = [f for f in os.listdir(dl_dir) if f.lower().endswith(".csv")]
+            if csv_files:
+                sel_csv = st.selectbox("CSV 파일 선택", csv_files)
+                if sel_csv:
+                    try:
+                        df_k = pd.read_csv(os.path.join(dl_dir, sel_csv))
+                        st.write("행/열:", df_k.shape)
+                        st.dataframe(df_k.head(200))
+
+                        # 표준화 매핑
+                        st.markdown("#### 표준 스키마 매핑 (date/value/(선택)group)")
+                        cols = df_k.columns.tolist()
+                        date_col = st.selectbox("날짜 열", ["(없음)"] + cols, index=0)
+                        value_col = st.selectbox("값 열", cols, index=min(1, len(cols)-1))
+                        group_col = st.selectbox("그룹 열(선택)", ["(없음)"] + cols, index=0)
+
+                        def to_datetime_safe(s: pd.Series) -> pd.Series:
+                            try:
+                                return pd.to_datetime(s, errors="coerce")
+                            except Exception:
+                                return pd.to_datetime(pd.Series([None]*len(s)), errors="coerce")
+
+                        std = pd.DataFrame()
+                        if date_col != "(없음)":
+                            std["date"] = to_datetime_safe(df_k[date_col])
+                        else:
+                            std["date"] = pd.NaT
+                        std["value"] = pd.to_numeric(df_k[value_col], errors="coerce")
+                        if group_col != "(없음)":
+                            std["group"] = df_k[group_col].astype(str)
+                        else:
+                            std["group"] = "all"
+                        std = std.dropna(subset=["value"]).copy()
+
+                        st.markdown("#### 표준화 데이터 미리보기")
+                        st.dataframe(std.head(200))
+                        download_button_for_df(std, "CSV 다운로드(표준화)", f"kaggle_standardized_{sel_csv}")
+
+                        # 간단 시각화
+                        if std["date"].notna().any():
+                            st.markdown("#### 빠른 선그래프")
+                            fig_k = px.line(std.sort_values("date"), x="date", y="value", color="group")
+                            fig_k.update_layout(xaxis_title="날짜", yaxis_title="값")
+                            st.plotly_chart(fig_k, use_container_width=True)
+                    except Exception as e:
+                        st.error(f"CSV 미리보기 실패: {e}")
+            else:
+                st.info("kaggle_data 폴더에 CSV 파일이 없습니다. 먼저 다운로드하세요.")
+        else:
+            st.info("아직 다운로드 폴더가 없습니다. 먼저 데이터셋을 다운로드하세요.")
+

@@ -33,17 +33,21 @@ A simple Streamlit app template for you to modify!
 
 ### Kaggle integration (optional)
 
-This app can download datasets from Kaggle directly if `kaggle` package and credentials are available.
+The app includes a Kaggle tab (visible when the `kaggle` package is installed) for downloading and previewing Kaggle datasets.
 
-1. Credentials
-   - Upload `kaggle.json` in the Kaggle tab, or
-   - Set environment variables `KAGGLE_USERNAME` and `KAGGLE_KEY`.
-   - Alternatively place `kaggle.json` in `~/.kaggle/kaggle.json` (chmod 600).
+1) Credentials
+   - EITHER upload `kaggle.json` in the Kaggle tab, OR set environment variables `KAGGLE_USERNAME` and `KAGGLE_KEY`.
+   - You may also place `Kaggle.json` at the repo root; the app copies it to `.kaggle/kaggle.json` automatically.
+   - On Linux/macOS you can instead place at `~/.kaggle/kaggle.json` with permissions 600.
 
-2. Use the Kaggle tab
-   - Enter dataset slug like `owner/dataset` (e.g., `zynicide/wine-reviews`).
-   - Click Download. The app will unzip and list CSV files for selection.
-   - Map date/value/(optional) group columns → standardize → visualize.
+2) Use in the app
+   - Open the Kaggle tab, enter a dataset slug like `owner/dataset` (e.g., `zynicide/wine-reviews`).
+   - Click "파일 목록 조회" to see files; click "데이터셋 다운로드" to fetch and unzip into `kaggle_data/`.
+   - Choose a CSV to preview; optionally map date/value/(group) to the standard schema and download a standardized CSV.
+
+Security notes
+- Never commit your Kaggle API key to source control. Keep `Kaggle.json` private.
+- In containerized/cloud environments, prefer environment variables or uploading `kaggle.json` per session.
 
 ---
 

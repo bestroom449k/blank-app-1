@@ -1,3 +1,7 @@
+# Kaggle credentials and data
+Kaggle.json
+.kaggle/
+kaggle_data/
 .streamlit/secrets.toml
 
 # Byte-compiled / optimized / DLL files
