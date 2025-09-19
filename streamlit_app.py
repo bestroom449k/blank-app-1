@@ -91,6 +91,61 @@ def robust_get(url: str, params: Optional[dict] = None, retry: int = 3, timeout:
 
 
 # -----------------------------
+# Kaggle 유틸
+# -----------------------------
+def kaggle_authenticate_if_possible() -> bool:
+    if not KAGGLE_AVAILABLE:
+        return False
+    # Prefer config dir created by app or repo Kaggle.json
+    config_dir = os.path.join(os.getcwd(), ".kaggle")
+    repo_kaggle = os.path.join(os.getcwd(), "Kaggle.json")
+    os.makedirs(config_dir, exist_ok=True)
+    config_path = os.path.join(config_dir, "kaggle.json")
+    if os.path.exists(repo_kaggle) and not os.path.exists(config_path):
+        try:
+            with open(repo_kaggle, "rb") as src, open(config_path, "wb") as dst:
+                dst.write(src.read())
+            try:
+                os.chmod(config_path, 0o600)
+            except Exception:
+                pass
+            os.environ["KAGGLE_CONFIG_DIR"] = config_dir
+        except Exception:
+            pass
+    # Try to authenticate
+    try:
+        kaggle_api.authenticate()  # type: ignore[attr-defined]
+        return True
+    except Exception:
+        return bool(os.getenv("KAGGLE_USERNAME") and os.getenv("KAGGLE_KEY"))
+
+
+def ensure_kaggle_file(dataset_slug: str, filename: str) -> str:
+    if not KAGGLE_AVAILABLE:
+        raise RuntimeError("Kaggle 라이브러리가 설치되어 있지 않습니다.")
+    if not kaggle_authenticate_if_possible():
+        raise RuntimeError("Kaggle 인증이 필요합니다. Kaggle 탭에서 kaggle.json을 업로드하거나 환경변수를 설정하세요.")
+    dl_dir = os.path.join(os.getcwd(), "kaggle_data")
+    os.makedirs(dl_dir, exist_ok=True)
+    target_path = os.path.join(dl_dir, filename)
+    if not os.path.exists(target_path):
+        kaggle_api.dataset_download_file(dataset=dataset_slug, file_name=filename, path=dl_dir, force=False, quiet=True)  # type: ignore[union-attr]
+        # download_file leaves as .csv or .zip? For single file, it downloads exact file; if zipped, handle
+        if not os.path.exists(target_path):
+            # Try full dataset download & unzip as fallback
+            kaggle_api.dataset_download_files(dataset_slug, path=dl_dir, unzip=True, quiet=True)  # type: ignore[union-attr]
+    if not os.path.exists(target_path):
+        # After unzip, search for the file
+        for f in os.listdir(dl_dir):
+            if f.lower() == filename.lower():
+                target_path = os.path.join(dl_dir, f)
+                break
+    if not os.path.exists(target_path):
+        raise RuntimeError(f"Kaggle 파일을 찾을 수 없습니다: {dataset_slug} / {filename}")
+    return target_path
+
+
+# -----------------------------
 # 공개 데이터 로더
 # -----------------------------
 @st.cache_data(ttl=60 * 60)
@@ -155,45 +210,33 @@ def load_nasa_gistemp_monthly_global() -> pd.DataFrame:
 
 @st.cache_data(ttl=60 * 60)
 def load_country_temperature_change() -> pd.DataFrame:
-    # Berkeley Earth 기반(OWID 가공본), 국가별 연도별 온도 변화(°C)
-    url_candidates = [
-        "https://raw.githubusercontent.com/owid/owid-datasets/master/datasets/Temperature%20change%20-%20Berkeley%20Earth/Temperature%20change%20-%20Berkeley%20Earth.csv",
-        "https://raw.githubusercontent.com/owid/owid-data/master/processed/berkeley_temperature_change/berkeley_temperature_change.csv",
-        "https://raw.githubusercontent.com/owid/owid-data/master/processed/temperature_change/temperature_change.csv",
-    ]
-    df = None
-    last_err: Optional[Exception] = None
-    for u in url_candidates:
-        try:
-            resp = robust_get(u)
-            _df = pd.read_csv(io.StringIO(resp.text))
-            if not _df.empty:
-                df = _df
-                break
-        except Exception as e:
-            last_err = e
-            continue
-    if df is None:
-        raise RuntimeError(f"국가별 온도 변화 데이터 로드 실패: {last_err}")
-
-    cols = [str(c) for c in df.columns]
-    low = {c.lower().strip(): c for c in cols}
-    col_entity = low.get("entity") or low.get("country") or low.get("location")
-    col_code = low.get("code") or low.get("iso3") or low.get("iso_code") or low.get("iso")
-    col_year = low.get("year")
-    numeric_cols = [c for c in cols if pd.api.types.is_numeric_dtype(df[c])]
-    pref = [c for c in numeric_cols if any(k in c.lower() for k in ["temp", "temperature", "change"])]
-    value_col = pref[-1] if pref else (numeric_cols[-1] if numeric_cols else None)
-    if not (col_entity and col_code and col_year and value_col):
-        raise RuntimeError("국가/연도/값 컬럼 식별 실패")
-    slim = df[[col_entity, col_code, col_year, value_col]].rename(
-        columns={col_entity: "entity", col_code: "code", col_year: "year", value_col: "value"}
+    """
+    Kaggle의 Berkeley Earth Surface Temperatures에서 국가별 월평균기온을 불러와
+    연도별 평균(절대값, °C)으로 집계합니다.
+    데이터셋: berkeleyearth/climate-change-earth-surface-temperature-data
+    파일: GlobalLandTemperaturesByCountry.csv
+    반환 컬럼: entity(국가명), year, date(연말), value(해당 연도 평균기온 °C)
+    """
+    dataset = "berkeleyearth/climate-change-earth-surface-temperature-data"
+    filename = "GlobalLandTemperaturesByCountry.csv"
+    path = ensure_kaggle_file(dataset, filename)
+    raw = pd.read_csv(path)
+    # 컬럼: dt, AverageTemperature, AverageTemperatureUncertainty, Country
+    need = [c for c in ["dt", "AverageTemperature", "Country"] if c in raw.columns]
+    if len(need) < 3:
+        raise RuntimeError("예상 컬럼(dt, AverageTemperature, Country)이 없습니다.")
+    df = raw[need].rename(columns={"dt": "date", "AverageTemperature": "temp", "Country": "entity"})
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df = df.dropna(subset=["date", "temp", "entity"]).copy()
+    df["year"] = df["date"].dt.year
+    # 연도별 평균기온으로 집계
+    ann = (
+        df.groupby(["entity", "year"], as_index=False)
+        .agg(value=("temp", "mean"))
     )
-    slim = slim.dropna(subset=["code", "year", "value"]).copy()
-    slim["year"] = slim["year"].astype(int)
-    slim["date"] = pd.to_datetime(slim["year"].astype(str) + "-12-31")
-    out = slim[["code", "entity", "date", "value", "year"]].sort_values(["year", "code"]).reset_index(drop=True)
-    return out
+    ann["date"] = pd.to_datetime(ann["year"].astype(int).astype(str) + "-12-31")
+    ann = ann[["entity", "year", "date", "value"]].sort_values(["year", "entity"]).reset_index(drop=True)
+    return ann
 
 
 # -----------------------------
@@ -249,13 +292,14 @@ def choropleth_by_year(df: pd.DataFrame, year: int, title: str) -> go.Figure:
     snap = df[df["date"].dt.year == year]
     fig = px.choropleth(
         snap,
-        locations="code",
+        locations="entity",
+        locationmode="country names",
         color="value",
         hover_name="entity",
         color_continuous_scale="RdYlBu_r",
         title=title,
     )
-    fig.update_layout(coloraxis_colorbar=dict(title="온도 변화(°C)"))
+    fig.update_layout(coloraxis_colorbar=dict(title="평균기온(°C)"))
     return fig
 
 
@@ -360,7 +404,7 @@ st.markdown("---")
 
 # 탭 구성
 extra_tabs = ["Kaggle"] if KAGGLE_AVAILABLE else []
-tab1, tab2, tab3, *rest = st.tabs(["시계열", "세계 지도", "사용자 설명", *extra_tabs])
+tab1, tab2, tab3, tab4, *rest = st.tabs(["시계열", "세계 지도", "상관관계", "사용자 설명", *extra_tabs])
 
 with tab1:
     st.subheader("시계열 지표")
@@ -401,26 +445,103 @@ with tab1:
     download_button_for_df(df_temp, "CSV 다운로드(전지구 이상기온)", "nasa_gistemp_global_monthly.csv")
 
 with tab2:
-    st.subheader("국가별 온도 변화 세계 지도")
+    st.subheader("국가별 평균기온 세계 지도(연도별)")
     try:
         df_country = load_country_temperature_change()
-    except Exception:
-        st.warning("국가별 온도 변화 데이터 로드 실패 → 예시 데이터로 표시합니다.")
-        df_country = sample_country_temp_change()
+    except Exception as e:
+        st.error(f"국가별 온도 데이터 로드 실패: {e}")
+        st.stop()
     df_country = df_country.copy()
     df_country["date"] = pd.to_datetime(df_country["date"])  # 표준화
     years = sorted(df_country["date"].dt.year.unique().tolist())
     if years:
         sel_year = st.slider("연도 선택", min_value=int(min(years)), max_value=int(max(years)), value=int(max(years)), step=1)
-        fig_map = choropleth_by_year(df_country, sel_year, f"국가별 온도 변화(°C) - {sel_year}")
+        fig_map = choropleth_by_year(df_country, sel_year, f"국가별 평균기온(°C) - {sel_year}")
         st.plotly_chart(fig_map, use_container_width=True)
-        dl_df = df_country.rename(columns={"code": "group"})[["date", "value", "group"]].sort_values(["date", "group"])
-        download_button_for_df(dl_df, "CSV 다운로드(국가별 온도 변화)", "country_temperature_change.csv")
+        dl_df = df_country.rename(columns={"entity": "group"})[["date", "value", "group"]].sort_values(["date", "group"])
+        download_button_for_df(dl_df, "CSV 다운로드(국가별 평균기온)", "country_avg_temperature_annual.csv")
     else:
         st.info("표시할 연도가 없습니다.")
     st.caption("참고: 일부 국가/연도는 값이 없을 수 있습니다.")
 
 with tab3:
+    st.subheader("기온과 학업 성취 상관관계 (실제 데이터)")
+    st.markdown("""
+    1) Kaggle 탭에서 학업 성취(예: PISA) 관련 CSV를 다운로드하세요.
+    2) 아래에서 CSV 파일을 선택하고, 국가/연도/성취도(숫자) 열을 지정합니다.
+    3) 동일 연도의 국가별 평균기온(베를리 지구 Kaggle 데이터)과 병합하여 산점도 및 상관계수를 보여줍니다.
+    """)
+    # 온도 데이터 준비
+    try:
+        df_temp_c = load_country_temperature_change()
+    except Exception as e:
+        st.error(f"온도 데이터 로드 실패: {e}")
+        st.stop()
+    dl_dir = os.path.join(os.getcwd(), "kaggle_data")
+    csv_files = [f for f in os.listdir(dl_dir)] if os.path.isdir(dl_dir) else []
+    csv_files = [f for f in csv_files if f.lower().endswith(".csv")]
+    if not csv_files:
+        st.info("kaggle_data 폴더에 CSV가 없습니다. Kaggle 탭에서 먼저 다운로드하세요.")
+    else:
+        sel_file = st.selectbox("학업 성취 CSV 선택", csv_files)
+        edu_path = os.path.join(dl_dir, sel_file)
+        try:
+            df_edu_raw = pd.read_csv(edu_path)
+        except Exception as e:
+            st.error(f"CSV 읽기 실패: {e}")
+            df_edu_raw = None
+        if df_edu_raw is not None:
+            st.write("행/열:", df_edu_raw.shape)
+            st.dataframe(df_edu_raw.head(50))
+            cols = df_edu_raw.columns.tolist()
+            col_country = st.selectbox("국가 열", cols)
+            col_year = st.selectbox("연도 열", cols)
+            col_score = st.selectbox("성취도(숫자) 열", cols)
+
+            # 전처리
+            edu = df_edu_raw[[col_country, col_year, col_score]].copy()
+            edu.columns = ["entity", "year", "score"]
+            # 연도 숫자화
+            edu["year"] = pd.to_numeric(edu["year"], errors="coerce").astype("Int64")
+            # 점수 숫자화
+            edu["score"] = pd.to_numeric(edu["score"], errors="coerce")
+            edu = edu.dropna(subset=["entity", "year", "score"]).copy()
+
+            # 연도 범위 선택
+            y_min = int(max(edu["year"].min(), df_temp_c["year"].min())) if len(edu) and len(df_temp_c) else 2000
+            y_max = int(min(edu["year"].max(), df_temp_c["year"].max())) if len(edu) and len(df_temp_c) else 2018
+            if y_min > y_max:
+                y_min, y_max = y_max, y_max
+            year_sel = st.slider("연도 선택(상관계수 계산 연도)", min_value=y_min, max_value=y_max, value=y_max, step=1)
+
+            # 동일 연도 병합(국가명 기준)
+            temp_y = df_temp_c[df_temp_c["year"] == year_sel][["entity", "value"]].rename(columns={"value": "temp"})
+            edu_y = edu[edu["year"] == year_sel][["entity", "score"]]
+            merged = pd.merge(temp_y, edu_y, on="entity", how="inner")
+            st.write(f"병합된 국가 수: {len(merged)}")
+            if len(merged) < 5:
+                st.warning("충분한 국가 수가 없습니다. 다른 연도를 선택하거나 매핑을 조정해 보세요.")
+            else:
+                # 피어슨 상관계수
+                try:
+                    r = float(np.corrcoef(merged["temp"], merged["score"])[0, 1])
+                except Exception:
+                    r = float("nan")
+                st.metric("피어슨 상관계수 r", f"{r:.3f}" if pd.notna(r) else "NaN")
+                # 산점도 + 단순 선형회귀선
+                fig_sc = px.scatter(merged, x="temp", y="score", hover_name="entity", title=f"{year_sel}년: 평균기온(°C) vs 학업 성취")
+                # 회귀선 수동 추가
+                try:
+                    m, b = np.polyfit(merged["temp"].astype(float), merged["score"].astype(float), 1)
+                    xfit = np.linspace(float(merged["temp"].min()), float(merged["temp"].max()), 50)
+                    yfit = m * xfit + b
+                    fig_sc.add_trace(go.Scatter(x=xfit, y=yfit, mode="lines", name="회귀선"))
+                except Exception:
+                    pass
+                fig_sc.update_layout(xaxis_title="평균기온(°C)", yaxis_title="학업 성취(점수)")
+                st.plotly_chart(fig_sc, use_container_width=True)
+
+with tab4:
     st.subheader("사용자 입력 대시보드 (설명 기반)")
     with st.expander("설명 전문 보기", expanded=False):
         st.write(DESCRIPTION_TEXT)
