@@ -47,13 +47,8 @@ def apply_pretendard_font():
         except Exception:
             pass
     # Plotly 전역 폰트 설정(브라우저 폰트 우선)
-    try:
-        import plotly.io as pio  # type: ignore
-        template = pio.templates["plotly"]
-        template.layout.font.family = "Pretendard, Noto Sans KR, Malgun Gothic, Apple SD Gothic Neo, sans-serif"
-        pio.templates.default = template
-    except Exception:
-        pass
+    # 전역 템플릿 설정은 환경에 따라 제약이 있어, 각 figure 수준에서 update_layout(font=...)를 사용합니다.
+    return
 
 
 # -----------------------------
@@ -326,113 +321,138 @@ st.markdown(
 """
 )
 
-st.header("공개 데이터 대시보드")
-
-col1, col2 = st.columns([1, 1])
-with col1:
-    st.subheader("전세계 CO₂ 배출량 (연간, Mt)")
-    smooth_co2em = st.sidebar.number_input("연간 CO₂ 배출량: 스무딩(이동평균)", min_value=0, max_value=60, value=0, step=1)
-    try:
-        df_em = load_owid_co2_emissions_world()
-    except Exception:
-        st.warning("공식 데이터 로드 실패 → 예시 데이터로 표시합니다.")
-        df_em = sample_world_emissions()
-    df_em = df_em.dropna().drop_duplicates()
-    fig_em = line_chart(df_em, "전세계 CO₂ 배출량", "배출량 (Mt)", smooth=smooth_co2em)
-    st.plotly_chart(fig_em, use_container_width=True)
-    download_button_for_df(df_em, "CSV 다운로드(전세계 CO₂ 배출량)", "world_co2_emissions.csv")
-
-with col2:
-    st.subheader("대기 중 CO₂ (월별, ppm)")
-    smooth_noaa = st.sidebar.number_input("Mauna Loa CO₂: 스무딩(이동평균)", min_value=0, max_value=24, value=6, step=1)
-    try:
-        df_co2 = load_noaa_mlo_co2_monthly()
-    except Exception:
-        st.warning("NOAA CO₂ 로드 실패 → 예시 데이터로 표시합니다.")
-        df_co2 = sample_noaa_co2()
-    df_co2 = df_co2.dropna().drop_duplicates()
-    fig_co2 = line_chart(df_co2, "Mauna Loa 대기 CO₂", "농도 (ppm)", smooth=smooth_noaa)
-    st.plotly_chart(fig_co2, use_container_width=True)
-    download_button_for_df(df_co2, "CSV 다운로드(대기 CO₂)", "noaa_co2_monthly.csv")
-
-st.subheader("전지구 평균기온 이상(월별, °C)")
+# 사이드바(공통 옵션)
+st.sidebar.header("옵션")
+smooth_co2em = st.sidebar.number_input("연간 CO₂ 배출량: 스무딩(이동평균)", min_value=0, max_value=60, value=0, step=1)
+smooth_noaa = st.sidebar.number_input("Mauna Loa CO₂: 스무딩(이동평균)", min_value=0, max_value=24, value=6, step=1)
 smooth_gis = st.sidebar.number_input("기온 이상: 스무딩(이동평균)", min_value=0, max_value=24, value=12, step=1)
+
+# KPI 영역
 try:
-    df_temp = load_nasa_gistemp_monthly_global()
+    _em = load_owid_co2_emissions_world()
+    em_last = _em.dropna().sort_values("date").iloc[-1]["value"] if len(_em) else None
 except Exception:
-    st.warning("NASA GISTEMP 로드 실패 → 예시 데이터로 표시합니다.")
-    df_temp = sample_gistemp()
-df_temp = df_temp.dropna().drop_duplicates()
-fig_temp = line_chart(df_temp, "전지구 평균기온 이상(월별)", "이상기온 (°C)", smooth=smooth_gis)
-st.plotly_chart(fig_temp, use_container_width=True)
-download_button_for_df(df_temp, "CSV 다운로드(전지구 이상기온)", "nasa_gistemp_global_monthly.csv")
+    em_last = None
+try:
+    _co2 = load_noaa_mlo_co2_monthly()
+    co2_last = _co2.dropna().sort_values("date").iloc[-1]["value"] if len(_co2) else None
+except Exception:
+    co2_last = None
+try:
+    _gt = load_nasa_gistemp_monthly_global()
+    gt_last = _gt.dropna().sort_values("date").iloc[-1]["value"] if len(_gt) else None
+except Exception:
+    gt_last = None
+
+col_a, col_b, col_c = st.columns(3)
+col_a.metric("전세계 CO₂ 배출량(최근, Mt)", f"{em_last:,.0f}" if em_last is not None else "-")
+col_b.metric("대기 CO₂(최근, ppm)", f"{co2_last:,.2f}" if co2_last is not None else "-")
+col_c.metric("전지구 이상기온(최근, °C)", f"{gt_last:+.2f}" if gt_last is not None else "-")
 
 st.markdown("---")
 
-st.subheader("국가별 온도 변화 세계 지도(연도 선택)")
-try:
-    df_country = load_country_temperature_change()
-except Exception:
-    st.warning("국가별 온도 변화 데이터 로드 실패 → 예시 데이터로 표시합니다.")
-    df_country = sample_country_temp_change()
+# 탭 구성
+tab1, tab2, tab3 = st.tabs(["시계열", "세계 지도", "사용자 설명"])
 
-df_country = df_country.copy()
-df_country["date"] = pd.to_datetime(df_country["date"])  # 표준화
-years = sorted(df_country["date"].dt.year.unique().tolist())
-if years:
-    sel_year = st.slider("연도 선택", min_value=int(min(years)), max_value=int(max(years)), value=int(max(years)), step=1)
-    fig_map = choropleth_by_year(df_country, sel_year, f"국가별 온도 변화(°C) - {sel_year}")
-    st.plotly_chart(fig_map, use_container_width=True)
-    dl_df = df_country.rename(columns={"code": "group"})[["date", "value", "group"]].sort_values(["date", "group"])
-    download_button_for_df(dl_df, "CSV 다운로드(국가별 온도 변화)", "country_temperature_change.csv")
-else:
-    st.info("표시할 연도가 없습니다.")
+with tab1:
+    st.subheader("시계열 지표")
+    c1, c2 = st.columns([1, 1])
+    with c1:
+        st.markdown("#### 전세계 CO₂ 배출량 (연간, Mt)")
+        try:
+            df_em = load_owid_co2_emissions_world()
+        except Exception:
+            st.warning("공식 데이터 로드 실패 → 예시 데이터로 표시합니다.")
+            df_em = sample_world_emissions()
+        df_em = df_em.dropna().drop_duplicates()
+        fig_em = line_chart(df_em, "전세계 CO₂ 배출량", "배출량 (Mt)", smooth=smooth_co2em)
+        st.plotly_chart(fig_em, use_container_width=True)
+        download_button_for_df(df_em, "CSV 다운로드(전세계 CO₂ 배출량)", "world_co2_emissions.csv")
 
-st.caption("참고: 일부 국가/연도는 값이 없을 수 있습니다.")
+    with c2:
+        st.markdown("#### 대기 중 CO₂ (월별, ppm)")
+        try:
+            df_co2 = load_noaa_mlo_co2_monthly()
+        except Exception:
+            st.warning("NOAA CO₂ 로드 실패 → 예시 데이터로 표시합니다.")
+            df_co2 = sample_noaa_co2()
+        df_co2 = df_co2.dropna().drop_duplicates()
+        fig_co2 = line_chart(df_co2, "Mauna Loa 대기 CO₂", "농도 (ppm)", smooth=smooth_noaa)
+        st.plotly_chart(fig_co2, use_container_width=True)
+        download_button_for_df(df_co2, "CSV 다운로드(대기 CO₂)", "noaa_co2_monthly.csv")
 
-st.markdown("---")
+    st.markdown("#### 전지구 평균기온 이상(월별, °C)")
+    try:
+        df_temp = load_nasa_gistemp_monthly_global()
+    except Exception:
+        st.warning("NASA GISTEMP 로드 실패 → 예시 데이터로 표시합니다.")
+        df_temp = sample_gistemp()
+    df_temp = df_temp.dropna().drop_duplicates()
+    fig_temp = line_chart(df_temp, "전지구 평균기온 이상(월별)", "이상기온 (°C)", smooth=smooth_gis)
+    st.plotly_chart(fig_temp, use_container_width=True)
+    download_button_for_df(df_temp, "CSV 다운로드(전지구 이상기온)", "nasa_gistemp_global_monthly.csv")
 
-st.header("사용자 입력 대시보드 (설명 기반)")
-with st.expander("설명 전문 보기", expanded=False):
-    st.write(DESCRIPTION_TEXT)
+with tab2:
+    st.subheader("국가별 온도 변화 세계 지도")
+    try:
+        df_country = load_country_temperature_change()
+    except Exception:
+        st.warning("국가별 온도 변화 데이터 로드 실패 → 예시 데이터로 표시합니다.")
+        df_country = sample_country_temp_change()
+    df_country = df_country.copy()
+    df_country["date"] = pd.to_datetime(df_country["date"])  # 표준화
+    years = sorted(df_country["date"].dt.year.unique().tolist())
+    if years:
+        sel_year = st.slider("연도 선택", min_value=int(min(years)), max_value=int(max(years)), value=int(max(years)), step=1)
+        fig_map = choropleth_by_year(df_country, sel_year, f"국가별 온도 변화(°C) - {sel_year}")
+        st.plotly_chart(fig_map, use_container_width=True)
+        dl_df = df_country.rename(columns={"code": "group"})[["date", "value", "group"]].sort_values(["date", "group"])
+        download_button_for_df(dl_df, "CSV 다운로드(국가별 온도 변화)", "country_temperature_change.csv")
+    else:
+        st.info("표시할 연도가 없습니다.")
+    st.caption("참고: 일부 국가/연도는 값이 없을 수 있습니다.")
 
-df_desc, df_desc_std = build_description_based_dataset()
+with tab3:
+    st.subheader("사용자 입력 대시보드 (설명 기반)")
+    with st.expander("설명 전문 보기", expanded=False):
+        st.write(DESCRIPTION_TEXT)
 
-metrics = ["전체"] + sorted(df_desc["지표"].unique().tolist())
-sel_metric = st.sidebar.selectbox("사용자 설명: 지표 필터", metrics, index=0)
-show_sankey = st.sidebar.checkbox("관계 흐름(샌키) 보기", value=True)
+    df_desc, df_desc_std = build_description_based_dataset()
+    metrics = ["전체"] + sorted(df_desc["지표"].unique().tolist())
+    sel_metric = st.selectbox("지표 필터", metrics, index=0)
+    show_sankey = st.checkbox("관계 흐름(샌키) 보기", value=True)
 
-if sel_metric != "전체":
-    view_df = df_desc[df_desc["지표"] == sel_metric].copy()
-else:
-    view_df = df_desc.copy()
+    if sel_metric != "전체":
+        view_df = df_desc[df_desc["지표"] == sel_metric].copy()
+    else:
+        view_df = df_desc.copy()
 
-fig_bar = px.bar(
-    view_df.sort_values("강도점수"),
-    x="강도점수",
-    y="연구",
-    color="지표",
-    orientation="h",
-    title="설명 기반 정성적 강도(낮음=1, 보통=2, 높음=3)",
-    text="강도",
-)
-fig_bar.update_layout(xaxis_title="강도점수(정성)", yaxis_title="연구")
-st.plotly_chart(fig_bar, use_container_width=True)
-
-if show_sankey:
-    labels = ["기온 상승", "수면시간 감소", "수면질 저하", "학습 효율 저하", "성적 하락"]
-    idx = {l: i for i, l in enumerate(labels)}
-    sources = [idx["기온 상승"], idx["기온 상승"], idx["수면시간 감소"], idx["수면질 저하"], idx["학습 효율 저하"]]
-    targets = [idx["수면시간 감소"], idx["수면질 저하"], idx["학습 효율 저하"], idx["학습 효율 저하"], idx["성적 하락"]]
-    values = [1, 1, 1, 1, 1]
-    sankey_fig = go.Figure(
-        data=[go.Sankey(node=dict(label=labels, pad=15, thickness=20), link=dict(source=sources, target=targets, value=values))]
+    fig_bar = px.bar(
+        view_df.sort_values("강도점수"),
+        x="강도점수",
+        y="연구",
+        color="지표",
+        orientation="h",
+        title="설명 기반 정성적 강도(낮음=1, 보통=2, 높음=3)",
+        text="강도",
     )
-    sankey_fig.update_layout(title="설명 기반 영향 흐름")
-    st.plotly_chart(sankey_fig, use_container_width=True)
+    fig_bar.update_layout(xaxis_title="강도점수(정성)", yaxis_title="연구")
+    st.plotly_chart(fig_bar, use_container_width=True)
 
-st.subheader("설명 기반 표준화 데이터 다운로드")
-download_button_for_df(df_desc_std, "CSV 다운로드(설명 기반 표준화)", "description_based_standardized.csv")
+    if show_sankey:
+        labels = ["기온 상승", "수면시간 감소", "수면질 저하", "학습 효율 저하", "성적 하락"]
+        idx = {l: i for i, l in enumerate(labels)}
+        sources = [idx["기온 상승"], idx["기온 상승"], idx["수면시간 감소"], idx["수면질 저하"], idx["학습 효율 저하"]]
+        targets = [idx["수면시간 감소"], idx["수면질 저하"], idx["학습 효율 저하"], idx["학습 효율 저하"], idx["성적 하락"]]
+        values = [1, 1, 1, 1, 1]
+        sankey_fig = go.Figure(
+            data=[go.Sankey(node=dict(label=labels, pad=15, thickness=20), link=dict(source=sources, target=targets, value=values))]
+        )
+        sankey_fig.update_layout(title="설명 기반 영향 흐름")
+        st.plotly_chart(sankey_fig, use_container_width=True)
+
+    st.subheader("설명 기반 표준화 데이터 다운로드")
+    download_button_for_df(df_desc_std, "CSV 다운로드(설명 기반 표준화)", "description_based_standardized.csv")
 
 st.markdown(
     """
