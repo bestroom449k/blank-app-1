@@ -602,8 +602,16 @@ with tab3:
             edu["score"] = pd.to_numeric(edu["score"], errors="coerce")
             edu = edu.dropna(subset=["entity", "year", "score"]).copy()
 
+            temp_for_merge = df_temp_c[["entity", "year", "value"]].copy()
+            temp_for_merge["entity"] = temp_for_merge["entity"].astype(str)
+            temp_for_merge["year"] = pd.to_numeric(temp_for_merge["year"], errors="coerce").astype("Int64")
+
+            edu["entity"] = edu["entity"].astype(str)
+            edu["year"] = pd.to_numeric(edu["year"], errors="coerce").astype("Int64")
+            edu = edu.dropna(subset=["entity", "year", "score"]).copy()
+
             merged_all = pd.merge(
-                df_temp_c[["entity", "year", "value"]],
+                temp_for_merge,
                 edu,
                 on=["entity", "year"],
                 how="inner",
