@@ -1,0 +1,965 @@
+year,subject,entity,score
+2009,Maths,Albania,377.0
+2012,Maths,Albania,394.0
+2015,Maths,Albania,413.0
+2018,Maths,Albania,437.0
+2015,Maths,Algeria,360.0
+2015,Maths,Argentina,409.0
+2018,Maths,Argentina,379.0
+2012,Maths,Argentina CABA,418.0
+2015,Maths,Argentina CABA,456.0
+2006,Maths,Australia,520.0
+2009,Maths,Australia,514.0
+2012,Maths,Australia,504.0
+2015,Maths,Australia,494.0
+2018,Maths,Australia,491.0
+2006,Maths,Austria,505.0
+2009,Maths,Austria,496.0
+2012,Maths,Austria,506.0
+2015,Maths,Austria,497.0
+2018,Maths,Austria,499.0
+2018,Maths,Azerbaijan,420.0
+2018,Maths,Belarus,472.0
+2006,Maths,Belgium,520.0
+2009,Maths,Belgium,515.0
+2012,Maths,Belgium,515.0
+2015,Maths,Belgium,507.0
+2018,Maths,Belgium,508.0
+2018,Maths,Bosnia and Herzegovina,406.0
+2006,Maths,Brazil,370.0
+2009,Maths,Brazil,386.0
+2012,Maths,Brazil,389.0
+2015,Maths,Brazil,377.0
+2018,Maths,Brazil,384.0
+2018,Maths,Brunei,430.0
+2006,Maths,Bulgaria,413.0
+2009,Maths,Bulgaria,428.0
+2012,Maths,Bulgaria,439.0
+2015,Maths,Bulgaria,441.0
+2018,Maths,Bulgaria,436.0
+2006,Maths,Canada,527.0
+2009,Maths,Canada,527.0
+2012,Maths,Canada,518.0
+2015,Maths,Canada,516.0
+2018,Maths,Canada,512.0
+2006,Maths,Chile,411.0
+2009,Maths,Chile,421.0
+2012,Maths,Chile,423.0
+2015,Maths,Chile,423.0
+2018,Maths,Chile,417.0
+2018,Maths,China (B-S-J-Z),591.0
+2015,Maths,China B-S-J-G,531.0
+2006,Maths,Colombia,370.0
+2009,Maths,Colombia,381.0
+2012,Maths,Colombia,376.0
+2015,Maths,Colombia,390.0
+2018,Maths,Colombia,391.0
+2012,Maths,Costa Rica,407.0
+2015,Maths,Costa Rica,400.0
+2018,Maths,Costa Rica,402.0
+2006,Maths,Croatia,467.0
+2009,Maths,Croatia,460.0
+2012,Maths,Croatia,471.0
+2015,Maths,Croatia,464.0
+2018,Maths,Croatia,464.0
+2015,Maths,Cyprus,437.0
+2018,Maths,Cyprus,451.0
+2006,Maths,Czech Republic,510.0
+2009,Maths,Czech Republic,493.0
+2012,Maths,Czech Republic,499.0
+2015,Maths,Czech Republic,492.0
+2018,Maths,Czech Republic,499.0
+2006,Maths,Denmark,513.0
+2009,Maths,Denmark,503.0
+2012,Maths,Denmark,500.0
+2015,Maths,Denmark,511.0
+2018,Maths,Denmark,509.0
+2015,Maths,Dominican Republic,328.0
+2018,Maths,Dominican Republic,325.0
+2006,Maths,Estonia,515.0
+2009,Maths,Estonia,512.0
+2012,Maths,Estonia,521.0
+2015,Maths,Estonia,520.0
+2018,Maths,Estonia,523.0
+2006,Maths,Finland,548.0
+2009,Maths,Finland,541.0
+2012,Maths,Finland,519.0
+2015,Maths,Finland,511.0
+2018,Maths,Finland,507.0
+2006,Maths,France,496.0
+2009,Maths,France,497.0
+2012,Maths,France,495.0
+2015,Maths,France,493.0
+2018,Maths,France,495.0
+2015,Maths,Georgia,404.0
+2018,Maths,Georgia,398.0
+2006,Maths,Germany,504.0
+2009,Maths,Germany,513.0
+2012,Maths,Germany,514.0
+2015,Maths,Germany,506.0
+2018,Maths,Germany,500.0
+2006,Maths,Greece,459.0
+2009,Maths,Greece,466.0
+2012,Maths,Greece,453.0
+2015,Maths,Greece,454.0
+2018,Maths,Greece,451.0
+2006,Maths,Hong Kong,547.0
+2009,Maths,Hong Kong,555.0
+2012,Maths,Hong Kong,561.0
+2015,Maths,Hong Kong,548.0
+2018,Maths,Hong Kong (China),551.0
+2006,Maths,Hungary,491.0
+2009,Maths,Hungary,490.0
+2012,Maths,Hungary,477.0
+2015,Maths,Hungary,477.0
+2018,Maths,Hungary,481.0
+2006,Maths,Iceland,506.0
+2009,Maths,Iceland,507.0
+2012,Maths,Iceland,493.0
+2015,Maths,Iceland,488.0
+2018,Maths,Iceland,495.0
+2006,Maths,Indonesia,391.0
+2009,Maths,Indonesia,371.0
+2012,Maths,Indonesia,375.0
+2015,Maths,Indonesia,386.0
+2018,Maths,Indonesia,379.0
+2006,Maths,Ireland,501.0
+2009,Maths,Ireland,487.0
+2012,Maths,Ireland,501.0
+2015,Maths,Ireland,504.0
+2018,Maths,Ireland,500.0
+2006,Maths,Israel,442.0
+2009,Maths,Israel,447.0
+2012,Maths,Israel,466.0
+2015,Maths,Israel,470.0
+2018,Maths,Israel,463.0
+2006,Maths,Italy,462.0
+2009,Maths,Italy,483.0
+2012,Maths,Italy,485.0
+2015,Maths,Italy,490.0
+2018,Maths,Italy,487.0
+2006,Maths,Japan,523.0
+2009,Maths,Japan,529.0
+2012,Maths,Japan,536.0
+2015,Maths,Japan,532.0
+2018,Maths,Japan,527.0
+2006,Maths,Jordan,384.0
+2009,Maths,Jordan,387.0
+2012,Maths,Jordan,386.0
+2015,Maths,Jordan,380.0
+2018,Maths,Jordan,400.0
+2009,Maths,Kazakhstan,405.0
+2012,Maths,Kazakhstan,432.0
+2015,Maths,Kazakhstan,460.0
+2018,Maths,Kazakhstan,423.0
+2015,Maths,Kosovo,362.0
+2018,Maths,Kosovo,366.0
+2006,Maths,Latvia,486.0
+2009,Maths,Latvia,482.0
+2012,Maths,Latvia,491.0
+2015,Maths,Latvia,482.0
+2018,Maths,Latvia,496.0
+2015,Maths,Lebanon,396.0
+2018,Maths,Lebanon,393.0
+2006,Maths,Lithuania,486.0
+2009,Maths,Lithuania,477.0
+2012,Maths,Lithuania,479.0
+2015,Maths,Lithuania,478.0
+2018,Maths,Lithuania,481.0
+2006,Maths,Luxembourg,490.0
+2009,Maths,Luxembourg,489.0
+2012,Maths,Luxembourg,490.0
+2015,Maths,Luxembourg,486.0
+2018,Maths,Luxembourg,483.0
+2006,Maths,Macau,525.0
+2009,Maths,Macau,525.0
+2012,Maths,Macau,538.0
+2015,Maths,Macau,544.0
+2018,Maths,Macau(China),558.0
+2015,Maths,Macedonia,371.0
+2012,Maths,Malaysia,421.0
+2015,Maths,Malaysia,446.0
+2018,Maths,Malaysia,440.0
+2015,Maths,Malta,479.0
+2018,Maths,Malta,472.0
+2006,Maths,Mexico,406.0
+2009,Maths,Mexico,419.0
+2012,Maths,Mexico,413.0
+2015,Maths,Mexico,408.0
+2018,Maths,Mexico,409.0
+2015,Maths,Moldova,420.0
+2018,Maths,Moldova,421.0
+2006,Maths,Montenegro,399.0
+2009,Maths,Montenegro,403.0
+2012,Maths,Montenegro,410.0
+2015,Maths,Montenegro,418.0
+2018,Maths,Montenegro,430.0
+2018,Maths,Morocco,368.0
+2006,Maths,Netherlands,531.0
+2009,Maths,Netherlands,526.0
+2012,Maths,Netherlands,523.0
+2015,Maths,Netherlands,512.0
+2018,Maths,Netherlands,519.0
+2006,Maths,New Zealand,522.0
+2009,Maths,New Zealand,519.0
+2012,Maths,New Zealand,500.0
+2015,Maths,New Zealand,495.0
+2018,Maths,New Zealand,494.0
+2018,Maths,North Macedonia,394.0
+2006,Maths,Norway,490.0
+2009,Maths,Norway,498.0
+2012,Maths,Norway,489.0
+2015,Maths,Norway,502.0
+2018,Maths,Norway,501.0
+2018,Maths,Panama,353.0
+2009,Maths,Peru,365.0
+2012,Maths,Peru,368.0
+2015,Maths,Peru,387.0
+2018,Maths,Peru,400.0
+2018,Maths,Philippines,353.0
+2006,Maths,Poland,495.0
+2009,Maths,Poland,495.0
+2012,Maths,Poland,518.0
+2015,Maths,Poland,504.0
+2018,Maths,Poland,516.0
+2006,Maths,Portugal,466.0
+2009,Maths,Portugal,487.0
+2012,Maths,Portugal,487.0
+2015,Maths,Portugal,492.0
+2018,Maths,Portugal,492.0
+2006,Maths,Qatar,318.0
+2009,Maths,Qatar,368.0
+2012,Maths,Qatar,376.0
+2015,Maths,Qatar,402.0
+2018,Maths,Qatar,414.0
+2006,Maths,Romania,415.0
+2009,Maths,Romania,427.0
+2012,Maths,Romania,445.0
+2015,Maths,Romania,444.0
+2018,Maths,Romania,430.0
+2006,Maths,Russia,476.0
+2009,Maths,Russia,468.0
+2012,Maths,Russia,482.0
+2015,Maths,Russia,494.0
+2018,Maths,Russia,488.0
+2018,Maths,Saudi Arabia,373.0
+2018,Maths,Serbia,448.0
+2009,Maths,Singapore,562.0
+2012,Maths,Singapore,573.0
+2015,Maths,Singapore,564.0
+2018,Maths,Singapore,569.0
+2006,Maths,Slovakia,492.0
+2009,Maths,Slovakia,497.0
+2012,Maths,Slovakia,482.0
+2015,Maths,Slovakia,475.0
+2018,Maths,Slovakia,486.0
+2006,Maths,Slovenia,504.0
+2009,Maths,Slovenia,501.0
+2012,Maths,Slovenia,501.0
+2015,Maths,Slovenia,510.0
+2018,Maths,Slovenia,509.0
+2006,Maths,South Korea,547.0
+2009,Maths,South Korea,546.0
+2012,Maths,South Korea,554.0
+2015,Maths,South Korea,524.0
+2018,Maths,South Korea,526.0
+2006,Maths,Spain,480.0
+2009,Maths,Spain,483.0
+2012,Maths,Spain,484.0
+2015,Maths,Spain,486.0
+2018,Maths,Spain,481.0
+2006,Maths,Sweden,502.0
+2009,Maths,Sweden,494.0
+2012,Maths,Sweden,478.0
+2015,Maths,Sweden,494.0
+2018,Maths,Sweden,502.0
+2006,Maths,Switzerland,530.0
+2009,Maths,Switzerland,534.0
+2012,Maths,Switzerland,531.0
+2015,Maths,Switzerland,521.0
+2018,Maths,Switzerland,515.0
+2006,Maths,Taiwan,549.0
+2009,Maths,Taiwan,543.0
+2012,Maths,Taiwan,560.0
+2015,Maths,Taiwan,542.0
+2018,Maths,Taiwan,531.0
+2006,Maths,Thailand,417.0
+2009,Maths,Thailand,419.0
+2012,Maths,Thailand,427.0
+2015,Maths,Thailand,415.0
+2018,Maths,Thailand,419.0
+2009,Maths,Trinidad and Tobago,414.0
+2015,Maths,Trinidad and Tobago,417.0
+2006,Maths,Tunisia,365.0
+2009,Maths,Tunisia,371.0
+2012,Maths,Tunisia,388.0
+2015,Maths,Tunisia,367.0
+2006,Maths,Turkey,424.0
+2009,Maths,Turkey,445.0
+2012,Maths,Turkey,448.0
+2015,Maths,Turkey,420.0
+2018,Maths,Turkey,454.0
+2018,Maths,Ukraine,453.0
+2012,Maths,United Arab Emirates,434.0
+2015,Maths,United Arab Emirates,427.0
+2018,Maths,United Arab Emirates,435.0
+2006,Maths,United Kingdom,495.0
+2009,Maths,United Kingdom,492.0
+2012,Maths,United Kingdom,494.0
+2015,Maths,United Kingdom,492.0
+2018,Maths,United Kingdom,502.0
+2006,Maths,United States,474.0
+2009,Maths,United States,487.0
+2012,Maths,United States,481.0
+2015,Maths,United States,470.0
+2018,Maths,United States,478.0
+2006,Maths,Uruguay,427.0
+2009,Maths,Uruguay,427.0
+2012,Maths,Uruguay,409.0
+2015,Maths,Uruguay,418.0
+2018,Maths,Uruguay,418.0
+2012,Maths,Vietnam,511.0
+2015,Maths,Vietnam,495.0
+2018,Maths,Vietnam,496.0
+2009,Reading,Albania,385.0
+2012,Reading,Albania,394.0
+2015,Reading,Albania,405.0
+2018,Reading,Albania,405.0
+2015,Reading,Algeria,350.0
+2015,Reading,Argentina,425.0
+2018,Reading,Argentina,402.0
+2012,Reading,Argentina CABA,429.0
+2015,Reading,Argentina CABA,475.0
+2006,Reading,Australia,513.0
+2009,Reading,Australia,515.0
+2012,Reading,Australia,512.0
+2015,Reading,Australia,503.0
+2018,Reading,Australia,503.0
+2006,Reading,Austria,490.0
+2009,Reading,Austria,470.0
+2012,Reading,Austria,490.0
+2015,Reading,Austria,485.0
+2018,Reading,Austria,484.0
+2018,Reading,Azerbaijan,389.0
+2018,Reading,Belarus,474.0
+2006,Reading,Belgium,501.0
+2009,Reading,Belgium,506.0
+2012,Reading,Belgium,509.0
+2015,Reading,Belgium,499.0
+2018,Reading,Belgium,493.0
+2018,Reading,Bosnia and Herzegovina,403.0
+2006,Reading,Brazil,393.0
+2009,Reading,Brazil,412.0
+2012,Reading,Brazil,407.0
+2015,Reading,Brazil,407.0
+2018,Reading,Brazil,413.0
+2018,Reading,Brunei,408.0
+2006,Reading,Bulgaria,402.0
+2009,Reading,Bulgaria,429.0
+2012,Reading,Bulgaria,436.0
+2015,Reading,Bulgaria,432.0
+2018,Reading,Bulgaria,420.0
+2006,Reading,Canada,527.0
+2009,Reading,Canada,524.0
+2012,Reading,Canada,523.0
+2015,Reading,Canada,527.0
+2018,Reading,Canada,520.0
+2006,Reading,Chile,442.0
+2009,Reading,Chile,449.0
+2012,Reading,Chile,441.0
+2015,Reading,Chile,459.0
+2018,Reading,Chile,452.0
+2018,Reading,China (B-S-J-Z),555.0
+2015,Reading,China B-S-J-G,494.0
+2006,Reading,Colombia,385.0
+2009,Reading,Colombia,413.0
+2012,Reading,Colombia,403.0
+2015,Reading,Colombia,425.0
+2018,Reading,Colombia,412.0
+2012,Reading,Costa Rica,441.0
+2015,Reading,Costa Rica,427.0
+2018,Reading,Costa Rica,426.0
+2006,Reading,Croatia,477.0
+2009,Reading,Croatia,476.0
+2012,Reading,Croatia,485.0
+2015,Reading,Croatia,487.0
+2018,Reading,Croatia,479.0
+2015,Reading,Cyprus,443.0
+2018,Reading,Cyprus,424.0
+2006,Reading,Czech Republic,483.0
+2009,Reading,Czech Republic,478.0
+2012,Reading,Czech Republic,493.0
+2015,Reading,Czech Republic,487.0
+2018,Reading,Czech Republic,490.0
+2006,Reading,Denmark,494.0
+2009,Reading,Denmark,495.0
+2012,Reading,Denmark,496.0
+2015,Reading,Denmark,500.0
+2018,Reading,Denmark,501.0
+2015,Reading,Dominican Republic,358.0
+2018,Reading,Dominican Republic,342.0
+2006,Reading,Estonia,501.0
+2009,Reading,Estonia,501.0
+2012,Reading,Estonia,516.0
+2015,Reading,Estonia,519.0
+2018,Reading,Estonia,523.0
+2006,Reading,Finland,547.0
+2009,Reading,Finland,536.0
+2012,Reading,Finland,524.0
+2015,Reading,Finland,526.0
+2018,Reading,Finland,520.0
+2006,Reading,France,488.0
+2009,Reading,France,496.0
+2012,Reading,France,505.0
+2015,Reading,France,499.0
+2018,Reading,France,493.0
+2015,Reading,Georgia,401.0
+2018,Reading,Georgia,380.0
+2006,Reading,Germany,495.0
+2009,Reading,Germany,497.0
+2012,Reading,Germany,508.0
+2015,Reading,Germany,509.0
+2018,Reading,Germany,498.0
+2006,Reading,Greece,460.0
+2009,Reading,Greece,483.0
+2012,Reading,Greece,477.0
+2015,Reading,Greece,467.0
+2018,Reading,Greece,457.0
+2006,Reading,Hong Kong,536.0
+2009,Reading,Hong Kong,533.0
+2012,Reading,Hong Kong,545.0
+2015,Reading,Hong Kong,527.0
+2018,Reading,Hong Kong (China),524.0
+2006,Reading,Hungary,482.0
+2009,Reading,Hungary,494.0
+2012,Reading,Hungary,488.0
+2015,Reading,Hungary,470.0
+2018,Reading,Hungary,476.0
+2006,Reading,Iceland,484.0
+2009,Reading,Iceland,500.0
+2012,Reading,Iceland,483.0
+2015,Reading,Iceland,482.0
+2018,Reading,Iceland,474.0
+2006,Reading,Indonesia,393.0
+2009,Reading,Indonesia,402.0
+2012,Reading,Indonesia,396.0
+2015,Reading,Indonesia,397.0
+2018,Reading,Indonesia,371.0
+2006,Reading,Ireland,517.0
+2009,Reading,Ireland,496.0
+2012,Reading,Ireland,523.0
+2015,Reading,Ireland,521.0
+2018,Reading,Ireland,518.0
+2006,Reading,Israel,439.0
+2009,Reading,Israel,474.0
+2012,Reading,Israel,486.0
+2015,Reading,Israel,479.0
+2018,Reading,Israel,470.0
+2006,Reading,Italy,469.0
+2009,Reading,Italy,486.0
+2012,Reading,Italy,490.0
+2015,Reading,Italy,485.0
+2018,Reading,Italy,476.0
+2006,Reading,Japan,498.0
+2009,Reading,Japan,520.0
+2012,Reading,Japan,538.0
+2015,Reading,Japan,516.0
+2018,Reading,Japan,504.0
+2006,Reading,Jordan,401.0
+2009,Reading,Jordan,405.0
+2012,Reading,Jordan,399.0
+2015,Reading,Jordan,408.0
+2018,Reading,Jordan,419.0
+2009,Reading,Kazakhstan,390.0
+2012,Reading,Kazakhstan,393.0
+2015,Reading,Kazakhstan,427.0
+2018,Reading,Kazakhstan,387.0
+2015,Reading,Kosovo,347.0
+2018,Reading,Kosovo,353.0
+2006,Reading,Latvia,479.0
+2009,Reading,Latvia,484.0
+2012,Reading,Latvia,489.0
+2015,Reading,Latvia,488.0
+2018,Reading,Latvia,479.0
+2015,Reading,Lebanon,347.0
+2018,Reading,Lebanon,353.0
+2006,Reading,Lithuania,470.0
+2009,Reading,Lithuania,468.0
+2012,Reading,Lithuania,477.0
+2015,Reading,Lithuania,472.0
+2018,Reading,Lithuania,476.0
+2006,Reading,Luxembourg,479.0
+2009,Reading,Luxembourg,472.0
+2012,Reading,Luxembourg,488.0
+2015,Reading,Luxembourg,481.0
+2018,Reading,Luxembourg,470.0
+2006,Reading,Macau,492.0
+2009,Reading,Macau,487.0
+2012,Reading,Macau,509.0
+2015,Reading,Macau,509.0
+2018,Reading,Macau (China),525.0
+2015,Reading,Macedonia,352.0
+2012,Reading,Malaysia,398.0
+2015,Reading,Malaysia,431.0
+2018,Reading,Malaysia,415.0
+2015,Reading,Malta,447.0
+2018,Reading,Malta,448.0
+2006,Reading,Mexico,410.0
+2009,Reading,Mexico,425.0
+2012,Reading,Mexico,424.0
+2015,Reading,Mexico,423.0
+2018,Reading,Mexico,420.0
+2015,Reading,Moldova,416.0
+2018,Reading,Moldova,424.0
+2006,Reading,Montenegro,392.0
+2009,Reading,Montenegro,408.0
+2012,Reading,Montenegro,422.0
+2015,Reading,Montenegro,427.0
+2018,Reading,Montenegro,421.0
+2018,Reading,Morocco,359.0
+2006,Reading,Netherlands,507.0
+2009,Reading,Netherlands,508.0
+2012,Reading,Netherlands,511.0
+2015,Reading,Netherlands,503.0
+2018,Reading,Netherlands,485.0
+2006,Reading,New Zealand,521.0
+2009,Reading,New Zealand,521.0
+2012,Reading,New Zealand,512.0
+2015,Reading,New Zealand,509.0
+2018,Reading,New Zealand,506.0
+2018,Reading,North Macedonia,393.0
+2006,Reading,Norway,484.0
+2009,Reading,Norway,503.0
+2012,Reading,Norway,504.0
+2015,Reading,Norway,513.0
+2018,Reading,Norway,499.0
+2018,Reading,Panama,377.0
+2009,Reading,Peru,370.0
+2012,Reading,Peru,384.0
+2015,Reading,Peru,398.0
+2018,Reading,Peru,401.0
+2018,Reading,Philippines,340.0
+2006,Reading,Poland,508.0
+2009,Reading,Poland,500.0
+2012,Reading,Poland,518.0
+2015,Reading,Poland,506.0
+2018,Reading,Poland,512.0
+2006,Reading,Portugal,472.0
+2009,Reading,Portugal,489.0
+2012,Reading,Portugal,488.0
+2015,Reading,Portugal,498.0
+2018,Reading,Portugal,492.0
+2006,Reading,Qatar,312.0
+2009,Reading,Qatar,372.0
+2012,Reading,Qatar,388.0
+2015,Reading,Qatar,402.0
+2018,Reading,Qatar,407.0
+2006,Reading,Romania,396.0
+2009,Reading,Romania,424.0
+2012,Reading,Romania,438.0
+2015,Reading,Romania,434.0
+2018,Reading,Romania,428.0
+2006,Reading,Russia,440.0
+2009,Reading,Russia,459.0
+2012,Reading,Russia,475.0
+2015,Reading,Russia,495.0
+2018,Reading,Russia,479.0
+2018,Reading,Saudi Arabia,399.0
+2018,Reading,Serbia,439.0
+2009,Reading,Singapore,526.0
+2012,Reading,Singapore,542.0
+2015,Reading,Singapore,535.0
+2018,Reading,Singapore,549.0
+2006,Reading,Slovakia,466.0
+2009,Reading,Slovakia,477.0
+2012,Reading,Slovakia,463.0
+2015,Reading,Slovakia,453.0
+2018,Reading,Slovakia,458.0
+2006,Reading,Slovenia,494.0
+2009,Reading,Slovenia,483.0
+2012,Reading,Slovenia,481.0
+2015,Reading,Slovenia,505.0
+2018,Reading,Slovenia,495.0
+2006,Reading,South Korea,556.0
+2009,Reading,South Korea,539.0
+2012,Reading,South Korea,536.0
+2015,Reading,South Korea,517.0
+2018,Reading,South Korea,514.0
+2006,Reading,Spain,461.0
+2009,Reading,Spain,481.0
+2012,Reading,Spain,488.0
+2015,Reading,Spain,496.0
+2006,Reading,Sweden,507.0
+2009,Reading,Sweden,497.0
+2012,Reading,Sweden,483.0
+2015,Reading,Sweden,500.0
+2018,Reading,Sweden,506.0
+2006,Reading,Switzerland,499.0
+2009,Reading,Switzerland,501.0
+2012,Reading,Switzerland,509.0
+2015,Reading,Switzerland,492.0
+2018,Reading,Switzerland,484.0
+2006,Reading,Taiwan,496.0
+2009,Reading,Taiwan,495.0
+2012,Reading,Taiwan,523.0
+2015,Reading,Taiwan,497.0
+2018,Reading,Taiwan,503.0
+2006,Reading,Thailand,417.0
+2009,Reading,Thailand,421.0
+2012,Reading,Thailand,441.0
+2015,Reading,Thailand,409.0
+2018,Reading,Thailand,393.0
+2009,Reading,Trinidad and Tobago,416.0
+2015,Reading,Trinidad and Tobago,427.0
+2006,Reading,Tunisia,380.0
+2009,Reading,Tunisia,404.0
+2012,Reading,Tunisia,404.0
+2015,Reading,Tunisia,361.0
+2006,Reading,Turkey,447.0
+2009,Reading,Turkey,464.0
+2012,Reading,Turkey,475.0
+2015,Reading,Turkey,428.0
+2018,Reading,Turkey,466.0
+2018,Reading,Ukraine,466.0
+2012,Reading,United Arab Emirates,442.0
+2015,Reading,United Arab Emirates,434.0
+2018,Reading,United Arab Emirates,432.0
+2006,Reading,United Kingdom,495.0
+2009,Reading,United Kingdom,494.0
+2012,Reading,United Kingdom,499.0
+2015,Reading,United Kingdom,498.0
+2018,Reading,United Kingdom,504.0
+2009,Reading,United States,500.0
+2012,Reading,United States,498.0
+2015,Reading,United States,497.0
+2018,Reading,United States,505.0
+2006,Reading,Uruguay,413.0
+2009,Reading,Uruguay,426.0
+2012,Reading,Uruguay,411.0
+2015,Reading,Uruguay,437.0
+2018,Reading,Uruguay,427.0
+2012,Reading,Vietnam,508.0
+2015,Reading,Vietnam,487.0
+2018,Reading,Vietnam,505.0
+2009,Science,Albania,391.0
+2012,Science,Albania,397.0
+2015,Science,Albania,427.0
+2018,Science,Albania,417.0
+2015,Science,Algeria,376.0
+2015,Science,Argentina,432.0
+2018,Science,Argentina,404.0
+2012,Science,Argentina CABA,425.0
+2015,Science,Argentina CABA,475.0
+2006,Science,Australia,527.0
+2009,Science,Australia,527.0
+2012,Science,Australia,521.0
+2015,Science,Australia,510.0
+2018,Science,Australia,503.0
+2006,Science,Austria,511.0
+2009,Science,Austria,494.0
+2012,Science,Austria,506.0
+2015,Science,Austria,495.0
+2018,Science,Austria,490.0
+2018,Science,Azerbaijan,398.0
+2018,Science,Belarus,471.0
+2006,Science,Belgium,510.0
+2009,Science,Belgium,507.0
+2012,Science,Belgium,505.0
+2015,Science,Belgium,502.0
+2018,Science,Belgium,499.0
+2018,Science,Bosnia and Herzegovina,398.0
+2006,Science,Brazil,390.0
+2009,Science,Brazil,405.0
+2012,Science,Brazil,402.0
+2015,Science,Brazil,401.0
+2018,Science,Brazil,404.0
+2018,Science,Brunei,431.0
+2006,Science,Bulgaria,434.0
+2009,Science,Bulgaria,439.0
+2012,Science,Bulgaria,446.0
+2015,Science,Bulgaria,446.0
+2018,Science,Bulgaria,424.0
+2006,Science,Canada,534.0
+2009,Science,Canada,529.0
+2012,Science,Canada,525.0
+2015,Science,Canada,528.0
+2018,Science,Canada,518.0
+2006,Science,Chile,438.0
+2009,Science,Chile,447.0
+2012,Science,Chile,445.0
+2015,Science,Chile,447.0
+2018,Science,Chile,444.0
+2018,Science,China (B-S-J-Z),590.0
+2015,Science,China B-S-J-G,518.0
+2006,Science,Colombia,388.0
+2009,Science,Colombia,402.0
+2012,Science,Colombia,399.0
+2015,Science,Colombia,416.0
+2018,Science,Colombia,413.0
+2012,Science,Costa Rica,429.0
+2015,Science,Costa Rica,420.0
+2018,Science,Costa Rica,416.0
+2006,Science,Croatia,493.0
+2009,Science,Croatia,486.0
+2012,Science,Croatia,491.0
+2015,Science,Croatia,475.0
+2018,Science,Croatia,472.0
+2015,Science,Cyprus,433.0
+2018,Science,Cyprus,439.0
+2006,Science,Czech Republic,513.0
+2009,Science,Czech Republic,500.0
+2012,Science,Czech Republic,508.0
+2015,Science,Czech Republic,493.0
+2018,Science,Czech Republic,497.0
+2006,Science,Denmark,496.0
+2009,Science,Denmark,499.0
+2012,Science,Denmark,498.0
+2015,Science,Denmark,502.0
+2018,Science,Denmark,493.0
+2015,Science,Dominican Republic,332.0
+2018,Science,Dominican Republic,336.0
+2006,Science,Estonia,531.0
+2009,Science,Estonia,528.0
+2012,Science,Estonia,541.0
+2015,Science,Estonia,534.0
+2018,Science,Estonia,530.0
+2006,Science,Finland,563.0
+2009,Science,Finland,554.0
+2012,Science,Finland,545.0
+2015,Science,Finland,531.0
+2018,Science,Finland,522.0
+2006,Science,France,495.0
+2009,Science,France,498.0
+2012,Science,France,499.0
+2015,Science,France,495.0
+2018,Science,France,493.0
+2015,Science,Georgia,411.0
+2018,Science,Georgia,383.0
+2006,Science,Germany,516.0
+2009,Science,Germany,520.0
+2012,Science,Germany,524.0
+2015,Science,Germany,509.0
+2018,Science,Germany,503.0
+2006,Science,Greece,473.0
+2009,Science,Greece,470.0
+2012,Science,Greece,467.0
+2015,Science,Greece,455.0
+2018,Science,Greece,452.0
+2006,Science,Hong Kong,542.0
+2009,Science,Hong Kong,549.0
+2012,Science,Hong Kong,555.0
+2015,Science,Hong Kong,523.0
+2018,Science,Hong Kong (China),517.0
+2006,Science,Hungary,504.0
+2009,Science,Hungary,503.0
+2012,Science,Hungary,494.0
+2015,Science,Hungary,477.0
+2018,Science,Hungary,481.0
+2006,Science,Iceland,491.0
+2009,Science,Iceland,496.0
+2012,Science,Iceland,478.0
+2015,Science,Iceland,473.0
+2018,Science,Iceland,475.0
+2006,Science,Indonesia,393.0
+2009,Science,Indonesia,383.0
+2012,Science,Indonesia,382.0
+2015,Science,Indonesia,403.0
+2018,Science,Indonesia,396.0
+2006,Science,Ireland,508.0
+2009,Science,Ireland,508.0
+2012,Science,Ireland,522.0
+2015,Science,Ireland,503.0
+2018,Science,Ireland,496.0
+2006,Science,Israel,454.0
+2009,Science,Israel,455.0
+2012,Science,Israel,470.0
+2015,Science,Israel,467.0
+2018,Science,Israel,462.0
+2006,Science,Italy,475.0
+2009,Science,Italy,489.0
+2012,Science,Italy,494.0
+2015,Science,Italy,481.0
+2018,Science,Italy,468.0
+2006,Science,Japan,531.0
+2009,Science,Japan,539.0
+2012,Science,Japan,547.0
+2015,Science,Japan,538.0
+2018,Science,Japan,529.0
+2006,Science,Jordan,422.0
+2009,Science,Jordan,415.0
+2012,Science,Jordan,409.0
+2015,Science,Jordan,409.0
+2018,Science,Jordan,429.0
+2009,Science,Kazakhstan,400.0
+2012,Science,Kazakhstan,425.0
+2015,Science,Kazakhstan,456.0
+2018,Science,Kazakhstan,397.0
+2015,Science,Kosovo,378.0
+2018,Science,Kosovo,365.0
+2006,Science,Latvia,490.0
+2009,Science,Latvia,494.0
+2012,Science,Latvia,502.0
+2015,Science,Latvia,490.0
+2018,Science,Latvia,487.0
+2015,Science,Lebanon,386.0
+2018,Science,Lebanon,384.0
+2006,Science,Lithuania,488.0
+2009,Science,Lithuania,491.0
+2012,Science,Lithuania,496.0
+2015,Science,Lithuania,475.0
+2018,Science,Lithuania,482.0
+2006,Science,Luxembourg,486.0
+2009,Science,Luxembourg,484.0
+2012,Science,Luxembourg,491.0
+2015,Science,Luxembourg,483.0
+2018,Science,Luxembourg,477.0
+2006,Science,Macau,511.0
+2009,Science,Macau,511.0
+2012,Science,Macau,521.0
+2015,Science,Macau,529.0
+2018,Science,Macau (China),544.0
+2015,Science,Macedonia,384.0
+2012,Science,Malaysia,420.0
+2015,Science,Malaysia,443.0
+2018,Science,Malaysia,438.0
+2015,Science,Malta,465.0
+2018,Science,Malta,457.0
+2006,Science,Mexico,410.0
+2009,Science,Mexico,416.0
+2012,Science,Mexico,415.0
+2015,Science,Mexico,416.0
+2018,Science,Mexico,419.0
+2015,Science,Moldova,428.0
+2018,Science,Moldova,428.0
+2006,Science,Montenegro,412.0
+2009,Science,Montenegro,401.0
+2012,Science,Montenegro,410.0
+2015,Science,Montenegro,411.0
+2018,Science,Montenegro,415.0
+2018,Science,Morocco,377.0
+2006,Science,Netherlands,525.0
+2009,Science,Netherlands,522.0
+2012,Science,Netherlands,522.0
+2015,Science,Netherlands,509.0
+2018,Science,Netherlands,503.0
+2006,Science,New Zealand,530.0
+2009,Science,New Zealand,532.0
+2012,Science,New Zealand,516.0
+2015,Science,New Zealand,513.0
+2018,Science,New Zealand,508.0
+2018,Science,North Macedonia,413.0
+2006,Science,Norway,487.0
+2009,Science,Norway,500.0
+2012,Science,Norway,495.0
+2015,Science,Norway,498.0
+2018,Science,Norway,490.0
+2018,Science,Panama,365.0
+2009,Science,Peru,369.0
+2012,Science,Peru,373.0
+2015,Science,Peru,397.0
+2018,Science,Peru,404.0
+2018,Science,Philippines,357.0
+2006,Science,Poland,498.0
+2009,Science,Poland,508.0
+2012,Science,Poland,526.0
+2015,Science,Poland,501.0
+2018,Science,Poland,511.0
+2006,Science,Portugal,474.0
+2009,Science,Portugal,493.0
+2012,Science,Portugal,489.0
+2015,Science,Portugal,501.0
+2018,Science,Portugal,492.0
+2006,Science,Qatar,349.0
+2009,Science,Qatar,379.0
+2012,Science,Qatar,384.0
+2015,Science,Qatar,418.0
+2018,Science,Qatar,419.0
+2006,Science,Romania,418.0
+2009,Science,Romania,428.0
+2012,Science,Romania,439.0
+2015,Science,Romania,435.0
+2018,Science,Romania,426.0
+2006,Science,Russia,479.0
+2009,Science,Russia,478.0
+2012,Science,Russia,486.0
+2015,Science,Russia,487.0
+2018,Science,Russia,478.0
+2018,Science,Saudi Arabia,386.0
+2018,Science,Serbia,440.0
+2009,Science,Singapore,542.0
+2012,Science,Singapore,551.0
+2015,Science,Singapore,556.0
+2018,Science,Singapore,551.0
+2006,Science,Slovakia,488.0
+2009,Science,Slovakia,490.0
+2012,Science,Slovakia,471.0
+2015,Science,Slovakia,461.0
+2018,Science,Slovakia,464.0
+2006,Science,Slovenia,519.0
+2009,Science,Slovenia,512.0
+2012,Science,Slovenia,514.0
+2015,Science,Slovenia,513.0
+2018,Science,Slovenia,507.0
+2006,Science,South Korea,522.0
+2009,Science,South Korea,538.0
+2012,Science,South Korea,538.0
+2015,Science,South Korea,516.0
+2018,Science,South Korea,519.0
+2006,Science,Spain,488.0
+2009,Science,Spain,488.0
+2012,Science,Spain,496.0
+2015,Science,Spain,493.0
+2018,Science,Spain,483.0
+2006,Science,Sweden,503.0
+2009,Science,Sweden,495.0
+2012,Science,Sweden,485.0
+2015,Science,Sweden,493.0
+2018,Science,Sweden,499.0
+2006,Science,Switzerland,512.0
+2009,Science,Switzerland,517.0
+2012,Science,Switzerland,515.0
+2015,Science,Switzerland,506.0
+2018,Science,Switzerland,495.0
+2006,Science,Taiwan,532.0
+2009,Science,Taiwan,520.0
+2012,Science,Taiwan,523.0
+2015,Science,Taiwan,532.0
+2018,Science,Taiwan,516.0
+2006,Science,Thailand,421.0
+2009,Science,Thailand,425.0
+2012,Science,Thailand,444.0
+2015,Science,Thailand,421.0
+2018,Science,Thailand,426.0
+2009,Science,Trinidad and Tobago,410.0
+2015,Science,Trinidad and Tobago,425.0
+2006,Science,Tunisia,386.0
+2009,Science,Tunisia,401.0
+2012,Science,Tunisia,398.0
+2015,Science,Tunisia,386.0
+2006,Science,Turkey,424.0
+2009,Science,Turkey,454.0
+2012,Science,Turkey,463.0
+2015,Science,Turkey,425.0
+2018,Science,Turkey,468.0
+2018,Science,Ukraine,469.0
+2012,Science,United Arab Emirates,448.0
+2015,Science,United Arab Emirates,437.0
+2018,Science,United Arab Emirates,434.0
+2006,Science,United Kingdom,515.0
+2009,Science,United Kingdom,514.0
+2012,Science,United Kingdom,514.0
+2015,Science,United Kingdom,509.0
+2018,Science,United Kingdom,505.0
+2006,Science,United States,489.0
+2009,Science,United States,502.0
+2012,Science,United States,497.0
+2015,Science,United States,496.0
+2018,Science,United States,502.0
+2006,Science,Uruguay,428.0
+2009,Science,Uruguay,427.0
+2012,Science,Uruguay,416.0
+2015,Science,Uruguay,435.0
+2018,Science,Uruguay,426.0
+2012,Science,Vietnam,528.0
+2015,Science,Vietnam,525.0
+2018,Science,Vietnam,543.0

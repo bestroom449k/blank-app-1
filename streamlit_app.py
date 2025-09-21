@@ -212,6 +212,7 @@ def load_nasa_gistemp_monthly_global() -> pd.DataFrame:
 APP_ROOT = Path(__file__).resolve().parent
 DATA_DIR = APP_ROOT / "data"
 LOCAL_COUNTRY_TEMP = DATA_DIR / "country_temperature_annual.csv"
+LOCAL_PISA_SCORES = DATA_DIR / "pisa_scores_2006_2018.csv"
 
 
 def _read_country_temperature_csv(csv_path: Path) -> pd.DataFrame:
@@ -224,6 +225,19 @@ def _read_country_temperature_csv(csv_path: Path) -> pd.DataFrame:
     df = df.dropna(subset=["date", "value", "entity", "year"]).copy()
     df["year"] = df["year"].astype(int)
     return df.sort_values(["entity", "year"]).reset_index(drop=True)
+
+
+@st.cache_data(ttl=60 * 60)
+def load_pisa_scores() -> pd.DataFrame:
+    df = pd.read_csv(LOCAL_PISA_SCORES)
+    required_cols = {"entity", "year", "subject", "score"}
+    missing = required_cols.difference(df.columns)
+    if missing:
+        raise RuntimeError(f"필수 열 누락: {', '.join(sorted(missing))}")
+    df["year"] = pd.to_numeric(df["year"], errors="coerce").astype("Int64")
+    df["score"] = pd.to_numeric(df["score"], errors="coerce")
+    df = df.dropna(subset=["entity", "year", "score"]).copy()
+    return df.sort_values(["entity", "year", "subject"]).reset_index(drop=True)
 
 
 @st.cache_data(ttl=60 * 60)
@@ -513,22 +527,44 @@ with tab3:
         up_alt = st.file_uploader("(대안) 교육 성취 CSV 직접 업로드", type=["csv"], accept_multiple_files=False)
         df_edu_raw: Optional[pd.DataFrame] = None
 
-        if not csv_files and up_alt is None:
-            st.info("kaggle_data 폴더에 CSV가 없습니다. Kaggle 탭에서 먼저 다운로드하거나, 위에 CSV를 업로드하세요.")
+        built_in_sources: dict[str, pd.DataFrame] = {}
+        if LOCAL_PISA_SCORES.exists():
+            try:
+                built_in_sources["🔹 내장: PISA 2006-2018 (OECD, CC0)"] = load_pisa_scores()
+            except Exception as e:
+                st.warning(f"내장 PISA 데이터 로드 실패: {e}")
+
+        available_sources: list[str] = []
+        available_sources.extend(built_in_sources.keys())
+        available_sources.extend(csv_files)
+
+        if not available_sources and up_alt is None:
+            st.info("학업 성취 CSV가 없습니다. Kaggle 탭에서 다운로드하거나 위에 파일을 업로드하세요.")
         else:
             if up_alt is not None:
                 try:
                     df_edu_raw = pd.read_csv(up_alt)
+                    st.success("업로드한 CSV를 사용합니다.")
                 except Exception as e:
                     st.error(f"업로드 CSV 읽기 실패: {e}")
             else:
-                sel_file = st.selectbox("학업 성취 CSV 선택", csv_files)
-                edu_path = os.path.join(dl_dir, sel_file)
-                try:
-                    df_edu_raw = pd.read_csv(edu_path)
-                except Exception as e:
-                    st.error(f"CSV 읽기 실패: {e}")
-                    df_edu_raw = None
+                sel_label = st.selectbox("학업 성취 데이터 소스 선택", available_sources)
+                if sel_label in built_in_sources:
+                    df_source = built_in_sources[sel_label]
+                    subjects = sorted(df_source["subject"].dropna().unique().tolist())
+                    if subjects:
+                        sel_subject = st.selectbox("과목 선택", subjects, key="pisa_subject")
+                        df_source = df_source[df_source["subject"] == sel_subject].drop(columns=["subject"]).copy()
+                        st.caption(f"선택한 과목: {sel_subject}")
+                    df_edu_raw = df_source.rename(columns={"entity": "country"})
+                else:
+                    edu_path = os.path.join(dl_dir, sel_label)
+                    try:
+                        df_edu_raw = pd.read_csv(edu_path)
+                    except Exception as e:
+                        st.error(f"CSV 읽기 실패: {e}")
+                        df_edu_raw = None
+
         if df_edu_raw is not None:
             st.write("행/열:", df_edu_raw.shape)
             st.dataframe(df_edu_raw.head(50))
