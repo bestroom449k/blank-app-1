@@ -586,8 +586,6 @@ with tab3:
                         df_edu_raw = None
 
         if df_edu_raw is not None:
-            st.write("행/열:", df_edu_raw.shape)
-            st.dataframe(df_edu_raw.head(50))
             cols = df_edu_raw.columns.tolist()
             col_country = st.selectbox("국가 열", cols)
             col_year = st.selectbox("연도 열", cols)
@@ -619,35 +617,45 @@ with tab3:
 
             if len(merged_all):
                 countries = sorted(merged_all["entity"].unique().tolist())
-                sel_country_line = st.selectbox(
-                    "꺾은선 그래프 국가 선택",
+                default_country = "South Korea" if "South Korea" in countries else countries[:1]
+                default_selection = [default_country] if isinstance(default_country, str) else default_country
+                sel_countries = st.multiselect(
+                    "꺾은선 그래프에 표시할 국가 (기본: 대한민국)",
                     countries,
-                    key="line_country",
+                    default=default_selection,
+                    key="line_countries",
                 )
-                country_df = merged_all[merged_all["entity"] == sel_country_line].sort_values("year")
-                if len(country_df) >= 2:
+                line_df = merged_all[merged_all["entity"].isin(sel_countries)].sort_values(["entity", "year"])
+                if len(line_df) >= 2 and sel_countries:
                     fig_line = go.Figure()
-                    fig_line.add_trace(
-                        go.Scatter(
-                            x=country_df["year"],
-                            y=country_df["temp"],
-                            name="평균기온(°C)",
-                            mode="lines+markers",
-                            line=dict(color="#FF6B6B"),
+                    palette = px.colors.qualitative.Set2
+                    for idx, country in enumerate(sel_countries):
+                        country_df = line_df[line_df["entity"] == country]
+                        if len(country_df) < 2:
+                            continue
+                        color_temp = palette[(2 * idx) % len(palette)]
+                        color_score = palette[(2 * idx + 1) % len(palette)]
+                        fig_line.add_trace(
+                            go.Scatter(
+                                x=country_df["year"],
+                                y=country_df["temp"],
+                                name=f"{country} 기온",
+                                mode="lines+markers",
+                                line=dict(color=color_temp),
+                            )
                         )
-                    )
-                    fig_line.add_trace(
-                        go.Scatter(
-                            x=country_df["year"],
-                            y=country_df["score"],
-                            name="학업 성취 점수",
-                            mode="lines+markers",
-                            yaxis="y2",
-                            line=dict(color="#4E79A7"),
+                        fig_line.add_trace(
+                            go.Scatter(
+                                x=country_df["year"],
+                                y=country_df["score"],
+                                name=f"{country} 성취", 
+                                mode="lines+markers",
+                                yaxis="y2",
+                                line=dict(color=color_score, dash="dash"),
+                            )
                         )
-                    )
                     fig_line.update_layout(
-                        title=f"{sel_country_line} 연도별 기온·학업 성취 추이",
+                        title="연도별 기온·학업 성취 꺾은선 추이",
                         xaxis_title="연도",
                         yaxis=dict(title="평균기온(°C)", side="left"),
                         yaxis2=dict(
@@ -659,7 +667,7 @@ with tab3:
                     )
                     st.plotly_chart(fig_line, use_container_width=True)
                 else:
-                    st.info("선택한 국가의 데이터가 2개 미만입니다. 다른 국가를 선택하세요.")
+                    st.info("선택한 국가 데이터가 충분하지 않습니다. 다른 국가를 추가하거나 기간을 확인하세요.")
 
             # 연도 범위 선택
             if df_temp_c is not None and len(df_temp_c) and len(edu):
