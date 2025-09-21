@@ -65,100 +65,6 @@ def apply_pretendard_font():
 st.set_page_config(page_title="기후·학습 공개 데이터 & 사용자 설명 대시보드", layout="wide")
 apply_pretendard_font()
 
-CUSTOM_CSS = """
-<style>
-body {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 35%, #020617 100%);
-    color: #f8fafc;
-}
-.main > div {
-    padding-top: 1rem;
-}
-.hero-card {
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 18px;
-    padding: 2.5rem 3rem;
-    box-shadow: 0 30px 60px rgba(2, 6, 23, 0.45);
-    position: relative;
-    overflow: hidden;
-}
-.hero-card::before {
-    content: "";
-    position: absolute;
-    inset: -40% -20%;
-    background: radial-gradient(circle at center, rgba(59, 130, 246, 0.35), transparent 60%);
-    animation: pulse 10s infinite;
-    z-index: 0;
-}
-.hero-content {
-    position: relative;
-    z-index: 1;
-}
-.metric-deck {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-}
-.metric-card {
-    background: rgba(15, 23, 42, 0.75);
-    border-radius: 16px;
-    padding: 1.25rem 1.5rem;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-    transition: transform 0.3s ease, border-color 0.3s ease;
-}
-.metric-card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(96, 165, 250, 0.6);
-}
-.metric-label {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #94a3b8;
-}
-.metric-value {
-    font-size: 1.9rem;
-    font-weight: 700;
-    color: #e2e8f0;
-}
-.metric-change {
-    font-size: 0.9rem;
-    color: #38bdf8;
-}
-.section-card {
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 20px;
-    padding: 1.8rem 2rem;
-    border: 1px solid rgba(51, 65, 85, 0.6);
-    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.45);
-}
-.section-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #f8fafc;
-    margin-bottom: 0.75rem;
-}
-.section-caption {
-    color: #94a3b8;
-    font-size: 0.95rem;
-}
-@keyframes pulse {
-    0%, 100% { transform: scale(0.9); opacity: 0.45; }
-    50% { transform: scale(1.1); opacity: 0.8; }
-}
-</style>
-"""
-st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
-
-
-def format_delta(delta: float, unit: str = "") -> str:
-    if pd.isna(delta):
-        return "변화 데이터 없음"
-    sign = "▲" if delta > 0 else ("▼" if delta < 0 else "―")
-    return f"{sign} {abs(delta):,.2f}{unit}" if unit else f"{sign} {abs(delta):,.2f}"
-
 
 def today_utc_date() -> date:
     return datetime.now(timezone.utc).date()
@@ -565,190 +471,46 @@ col_c.metric("전지구 이상기온(최근, °C)", f"{gt_last:+.2f}" if gt_last
 st.markdown("---")
 
 # 탭 구성
-co2_latest_val = temp_latest_val = pisa_latest_val = None
-try:
-    co2_metric_df = load_owid_co2_emissions_world()
-    if len(co2_metric_df) >= 2:
-        co2_latest_row = co2_metric_df.iloc[-1]
-        co2_prev_row = co2_metric_df.iloc[-2]
-        co2_latest_val = co2_latest_row["value"]
-        co2_delta = co2_latest_row["value"] - co2_prev_row["value"]
-        co2_year = int(co2_latest_row["date"].year)
-    elif len(co2_metric_df) == 1:
-        co2_latest_row = co2_metric_df.iloc[-1]
-        co2_latest_val = co2_latest_row["value"]
-        co2_delta = float("nan")
-        co2_year = int(co2_latest_row["date"].year)
-    else:
-        co2_delta = float("nan")
-        co2_year = None
-except Exception:
-    co2_metric_df = pd.DataFrame()
-    co2_delta = float("nan")
-    co2_year = None
-    co2_latest_val = None
-
-try:
-    temp_metric_df = load_nasa_gistemp_monthly_global()
-    if temp_metric_df.empty:
-        raise RuntimeError("GISTEMP 데이터가 비어 있습니다.")
-    if len(temp_metric_df) >= 13:
-        temp_latest_row = temp_metric_df.iloc[-1]
-        temp_prev_row = temp_metric_df.iloc[-13]
-    elif len(temp_metric_df) >= 2:
-        temp_latest_row = temp_metric_df.iloc[-1]
-        temp_prev_row = temp_metric_df.iloc[-2]
-    else:
-        temp_latest_row = temp_metric_df.iloc[-1]
-        temp_prev_row = temp_latest_row
-    temp_latest_val = float(temp_latest_row["value"])
-    temp_delta = temp_latest_row["value"] - temp_prev_row["value"]
-    temp_date_label = temp_latest_row["date"].strftime("%Y-%m")
-except Exception:
-    temp_delta = float("nan")
-    temp_date_label = ""
-    temp_latest_val = None
-
-try:
-    pisa_metric_df = load_pisa_scores()
-    pisa_korea = pisa_metric_df[(pisa_metric_df["entity"] == "South Korea") & (pisa_metric_df["subject"] == "Maths")]
-    if not pisa_korea.empty:
-        pisa_latest_row = pisa_korea.sort_values("year").iloc[-1]
-        pisa_prev_row = pisa_korea.sort_values("year").iloc[-2] if len(pisa_korea) >= 2 else pisa_latest_row
-    else:
-        pisa_latest_row = pisa_metric_df[pisa_metric_df["subject"] == "Maths"].sort_values("year").iloc[-1]
-        pisa_prev_row = pisa_metric_df[pisa_metric_df["subject"] == "Maths"].sort_values("year").iloc[-2]
-    pisa_latest_val = float(pisa_latest_row["score"])
-    pisa_delta = pisa_latest_row["score"] - pisa_prev_row["score"]
-    pisa_year = int(pisa_latest_row["year"])
-except Exception:
-    pisa_delta = float("nan")
-    pisa_year = None
-    pisa_latest_val = None
-
-co2_value_str = f"{co2_latest_val:,.0f}" if co2_latest_val is not None else "―"
-co2_delta_str = format_delta(co2_delta, " Mt")
-temp_value_str = f"{temp_latest_val:.3f}" if temp_latest_val is not None else "―"
-temp_delta_str = format_delta(temp_delta, " ppm")
-pisa_value_str = f"{pisa_latest_val:.1f}" if pisa_latest_val is not None else "―"
-pisa_delta_str = format_delta(pisa_delta, " 점")
-
-hero_markdown = f"""
-<div class='hero-card'>
-  <div class='hero-content'>
-    <h1>기후에서 교육까지 한 화면에</h1>
-    <p>전세계 CO₂ 배출, 대기 중 농도, 전지구 이상기온과 PISA 학업 성취까지 — 최신 데이터를 기반으로 변화의 흐름을 비교해 보세요.</p>
-    <div class='metric-deck'>
-      <div class='metric-card'>
-        <div class='metric-label'>전세계 CO₂ 배출 ({co2_year or '최근'})</div>
-        <div class='metric-value'>{co2_value_str} Mt</div>
-        <div class='metric-change'>{co2_delta_str}</div>
-      </div>
-      <div class='metric-card'>
-        <div class='metric-label'>대기 중 CO₂ ({temp_date_label})</div>
-        <div class='metric-value'>{temp_value_str} ppm</div>
-        <div class='metric-change'>{temp_delta_str}</div>
-      </div>
-      <div class='metric-card'>
-        <div class='metric-label'>대한민국 PISA 수학 ({pisa_year or '최근'})</div>
-        <div class='metric-value'>{pisa_value_str} 점</div>
-        <div class='metric-change'>{pisa_delta_str}</div>
-      </div>
-    </div>
-  </div>
-</div>
-"""
-st.markdown(hero_markdown, unsafe_allow_html=True)
-
 extra_tabs = ["Kaggle"] if KAGGLE_AVAILABLE else []
 tab1, tab2, tab3, tab4, *rest = st.tabs(["시계열", "세계 지도", "상관관계", "사용자 설명", *extra_tabs])
 
 with tab1:
     st.subheader("시계열 지표")
+    c1, c2 = st.columns([1, 1])
+    with c1:
+        st.markdown("#### 전세계 CO₂ 배출량 (연간, Mt)")
+        try:
+            df_em = load_owid_co2_emissions_world()
+        except Exception:
+            st.warning("공식 데이터 로드 실패 → 예시 데이터로 표시합니다.")
+            df_em = sample_world_emissions()
+        df_em = df_em.dropna().drop_duplicates()
+        fig_em = line_chart(df_em, "전세계 CO₂ 배출량", "배출량 (Mt)", smooth=smooth_co2em)
+        st.plotly_chart(fig_em, use_container_width=True)
+        download_button_for_df(df_em, "CSV 다운로드(전세계 CO₂ 배출량)", "world_co2_emissions.csv")
 
+    with c2:
+        st.markdown("#### 대기 중 CO₂ (월별, ppm)")
+        try:
+            df_co2 = load_noaa_mlo_co2_monthly()
+        except Exception:
+            st.warning("NOAA CO₂ 로드 실패 → 예시 데이터로 표시합니다.")
+            df_co2 = sample_noaa_co2()
+        df_co2 = df_co2.dropna().drop_duplicates()
+        fig_co2 = line_chart(df_co2, "Mauna Loa 대기 CO₂", "농도 (ppm)", smooth=smooth_noaa)
+        st.plotly_chart(fig_co2, use_container_width=True)
+        download_button_for_df(df_co2, "CSV 다운로드(대기 CO₂)", "noaa_co2_monthly.csv")
+
+    st.markdown("#### 전지구 평균기온 이상(월별, °C)")
     try:
-        df_em = load_owid_co2_emissions_world().dropna().drop_duplicates()
-    except Exception:
-        st.warning("공식 데이터 로드 실패 → 예시 데이터로 표시합니다.")
-        df_em = sample_world_emissions()
-
-    with st.container():
-        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-        left, right = st.columns([1.1, 1.9])
-        with left:
-            st.markdown("<div class='section-title'>전세계 CO₂ 배출량 (연간, Mt)</div>", unsafe_allow_html=True)
-            st.markdown(
-                "<p class='section-caption'>Our World in Data의 공식 통계를 바탕으로 연도별 총 배출량 추이를 살펴봅니다. 애니메이션 탭을 선택하면 연도별 증가 흐름을 자동 재생할 수 있습니다.</p>",
-                unsafe_allow_html=True,
-            )
-            download_button_for_df(df_em, "CSV 다운로드", "world_co2_emissions.csv")
-        with right:
-            line_tab, anim_tab = st.tabs(["라인 추세", "연도별 애니메이션"])
-            with line_tab:
-                fig_em = line_chart(df_em, "전세계 CO₂ 배출량", "배출량 (Mt)", smooth=smooth_co2em)
-                fig_em.update_layout(template="plotly_dark")
-                st.plotly_chart(fig_em, use_container_width=True)
-            with anim_tab:
-                anim_df = df_em.copy()
-                anim_df["year"] = anim_df["date"].dt.year
-                fig_em_anim = px.bar(
-                    anim_df,
-                    x="year",
-                    y="value",
-                    animation_frame="year",
-                    range_y=[0, anim_df["value"].max() * 1.1],
-                    labels={"year": "연도", "value": "배출량 (Mt)"},
-                    title="연도별 전세계 CO₂ 배출량 애니메이션",
-                )
-                fig_em_anim.update_layout(template="plotly_dark", showlegend=False)
-                st.plotly_chart(fig_em_anim, use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    try:
-        df_co2 = load_noaa_mlo_co2_monthly().dropna().drop_duplicates()
-    except Exception:
-        st.warning("NOAA CO₂ 로드 실패 → 예시 데이터로 표시합니다.")
-        df_co2 = sample_noaa_co2()
-
-    with st.container():
-        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-        left, right = st.columns([1.1, 1.9])
-        with left:
-            st.markdown("<div class='section-title'>대기 중 CO₂ 농도 (월별, ppm)</div>", unsafe_allow_html=True)
-            st.markdown(
-                "<p class='section-caption'>NOAA Mauna Loa 관측소의 월별 CO₂ 농도를 시각화합니다. 부드러운 곡선과 영역 강조로 장기 상승 추세를 직관적으로 확인할 수 있습니다.</p>",
-                unsafe_allow_html=True,
-            )
-            download_button_for_df(df_co2, "CSV 다운로드", "noaa_co2_monthly.csv")
-        with right:
-            fig_co2 = line_chart(df_co2, "Mauna Loa 대기 CO₂", "농도 (ppm)", smooth=smooth_noaa)
-            fig_co2.update_traces(fill="tozeroy", fillcolor="rgba(148, 163, 184, 0.25)")
-            fig_co2.update_layout(template="plotly_dark")
-            st.plotly_chart(fig_co2, use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    try:
-        df_temp = load_nasa_gistemp_monthly_global().dropna().drop_duplicates()
+        df_temp = load_nasa_gistemp_monthly_global()
     except Exception:
         st.warning("NASA GISTEMP 로드 실패 → 예시 데이터로 표시합니다.")
         df_temp = sample_gistemp()
-
-    with st.container():
-        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-        left, right = st.columns([1.1, 1.9])
-        with left:
-            st.markdown("<div class='section-title'>전지구 평균기온 이상 (월별, °C)</div>", unsafe_allow_html=True)
-            st.markdown(
-                "<p class='section-caption'>NASA GISTEMP v4가 제공하는 월별 이상기온입니다. 최근 10년간 빠르게 상승하는 추세를 강조하기 위해 영역형 선그래프와 대비 색상을 적용했습니다.</p>",
-                unsafe_allow_html=True,
-            )
-            download_button_for_df(df_temp, "CSV 다운로드", "nasa_gistemp_global_monthly.csv")
-        with right:
-            fig_temp = line_chart(df_temp, "전지구 평균기온 이상", "이상기온 (°C)", smooth=smooth_gis)
-            fig_temp.update_traces(line=dict(color="#f97316", width=3))
-            fig_temp.update_layout(template="plotly_dark")
-            st.plotly_chart(fig_temp, use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+    df_temp = df_temp.dropna().drop_duplicates()
+    fig_temp = line_chart(df_temp, "전지구 평균기온 이상(월별)", "이상기온 (°C)", smooth=smooth_gis)
+    st.plotly_chart(fig_temp, use_container_width=True)
+    download_button_for_df(df_temp, "CSV 다운로드(전지구 이상기온)", "nasa_gistemp_global_monthly.csv")
 
 with tab2:
     st.subheader("국가별 평균기온 세계 지도(연도별)")
