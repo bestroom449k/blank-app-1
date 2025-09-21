@@ -40,6 +40,8 @@ The app includes a Kaggle tab (visible when the `kaggle` package is installed) f
    - Docker Compose: copy `.env.example` to `.env` and fill `KAGGLE_USERNAME`/`KAGGLE_KEY`, or export them before `docker compose up`.
    - You may also place `Kaggle.json` at the repo root; the app copies it to `.kaggle/kaggle.json` automatically.
    - On Linux/macOS you can instead place at `~/.kaggle/kaggle.json` with permissions 600.
+   - 빠른 시작을 위해 Berkeley Earth의 연도별 국가 평균기온을 전처리한 `data/country_temperature_annual.csv`를 포함했습니다 (CC-BY 라이선스). Kaggle 키 없이도 실제 데이터를 볼 수 있습니다.
+   - Kaggle 키를 제공하면 최신 데이터를 다운로드한 뒤 동일 경로에 캐시하여 자동 갱신합니다.
 
 2) Use in the app
    - Open the Kaggle tab, enter a dataset slug like `owner/dataset` (e.g., `zynicide/wine-reviews`).

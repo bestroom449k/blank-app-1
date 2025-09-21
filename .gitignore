@@ -3,6 +3,9 @@ Kaggle.json
 .kaggle/
 kaggle_data/
 .streamlit/secrets.toml
+# Raw Kaggle extractions (curated CSV lives in repo)
+data/*.zip
+data/GlobalLandTemperaturesByCountry.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

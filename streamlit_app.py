@@ -4,6 +4,7 @@ import os
 import io
 import base64
 from datetime import datetime, timezone, date
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -208,34 +209,53 @@ def load_nasa_gistemp_monthly_global() -> pd.DataFrame:
     return out.dropna().drop_duplicates()
 
 
+APP_ROOT = Path(__file__).resolve().parent
+DATA_DIR = APP_ROOT / "data"
+LOCAL_COUNTRY_TEMP = DATA_DIR / "country_temperature_annual.csv"
+
+
+def _read_country_temperature_csv(csv_path: Path) -> pd.DataFrame:
+    df = pd.read_csv(csv_path)
+    required_cols = {"entity", "year", "date", "value"}
+    missing = required_cols.difference(df.columns)
+    if missing:
+        raise RuntimeError(f"필수 열 누락: {', '.join(sorted(missing))}")
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df = df.dropna(subset=["date", "value", "entity", "year"]).copy()
+    df["year"] = df["year"].astype(int)
+    return df.sort_values(["entity", "year"]).reset_index(drop=True)
+
+
 @st.cache_data(ttl=60 * 60)
 def load_country_temperature_change() -> pd.DataFrame:
-    """
-    Kaggle의 Berkeley Earth Surface Temperatures에서 국가별 월평균기온을 불러와
-    연도별 평균(절대값, °C)으로 집계합니다.
-    데이터셋: berkeleyearth/climate-change-earth-surface-temperature-data
-    파일: GlobalLandTemperaturesByCountry.csv
-    반환 컬럼: entity(국가명), year, date(연말), value(해당 연도 평균기온 °C)
-    """
+    """Berkeley Earth 국가별 평균기온(연도별) 실제 데이터 로드"""
+    if LOCAL_COUNTRY_TEMP.exists():
+        return _read_country_temperature_csv(LOCAL_COUNTRY_TEMP)
+
     dataset = "berkeleyearth/climate-change-earth-surface-temperature-data"
     filename = "GlobalLandTemperaturesByCountry.csv"
     path = ensure_kaggle_file(dataset, filename)
     raw = pd.read_csv(path)
-    # 컬럼: dt, AverageTemperature, AverageTemperatureUncertainty, Country
     need = [c for c in ["dt", "AverageTemperature", "Country"] if c in raw.columns]
     if len(need) < 3:
-        raise RuntimeError("예상 컬럼(dt, AverageTemperature, Country)이 없습니다.")
+        raise RuntimeError("필수 열(dt, AverageTemperature, Country)을 찾을 수 없습니다.")
     df = raw[need].rename(columns={"dt": "date", "AverageTemperature": "temp", "Country": "entity"})
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
     df = df.dropna(subset=["date", "temp", "entity"]).copy()
     df["year"] = df["date"].dt.year
-    # 연도별 평균기온으로 집계
     ann = (
         df.groupby(["entity", "year"], as_index=False)
         .agg(value=("temp", "mean"))
     )
     ann["date"] = pd.to_datetime(ann["year"].astype(int).astype(str) + "-12-31")
-    ann = ann[["entity", "year", "date", "value"]].sort_values(["year", "entity"]).reset_index(drop=True)
+    ann = ann[["entity", "year", "date", "value"]].sort_values(["entity", "year"]).reset_index(drop=True)
+
+    try:
+        DATA_DIR.mkdir(exist_ok=True)
+        ann.to_csv(LOCAL_COUNTRY_TEMP, index=False)
+    except Exception:
+        pass
+
     return ann
 
 
@@ -753,4 +773,3 @@ if KAGGLE_AVAILABLE and rest:
                 st.info("kaggle_data 폴더에 CSV 파일이 없습니다. 먼저 다운로드하세요.")
         else:
             st.info("아직 다운로드 폴더가 없습니다. 먼저 데이터셋을 다운로드하세요.")
-
