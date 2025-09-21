@@ -43,6 +43,7 @@ The app includes a Kaggle tab (visible when the `kaggle` package is installed) f
    - 빠른 시작을 위해 다음 실데이터를 포함했습니다.
      - `data/nasa_gistemp_global_monthly.csv`: NASA GISTEMP 전지구 월별 기온 이상(°C, CC BY 3.0)
      - `data/country_temperature_annual.csv`: Berkeley Earth 국가별 연도 평균기온 (CC-BY)
+     - `data/owid_world_co2_annual.csv`: Our World in Data 전지구 CO₂ 배출량 (Mt, CC-BY)
      - `data/pisa_scores_2006_2018.csv`: Kaggle `prasertk/pisa-scores-20062018`에서 전처리한 PISA 점수 (CC0)
      Kaggle 키 없이도 실제 데이터를 바로 확인할 수 있으며, Kaggle 인증을 제공하면 최신 데이터로 자동 갱신됩니다.
    - Kaggle 키를 제공하면 해당 경로에 최신 데이터를 캐시하여 자동 갱신합니다.

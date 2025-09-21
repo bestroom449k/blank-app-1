@@ -152,15 +152,28 @@ def ensure_kaggle_file(dataset_slug: str, filename: str) -> str:
 @st.cache_data(ttl=60 * 60)
 def load_owid_co2_emissions_world() -> pd.DataFrame:
     # OWID 전세계 CO₂ 배출량 (Mt) 연도별
+    if LOCAL_CO2_WORLD.exists():
+        try:
+            df_local = pd.read_csv(LOCAL_CO2_WORLD, parse_dates=["date"])
+            out_local = df_local.dropna(subset=["date", "value"]).sort_values("date").reset_index(drop=True)
+            if len(out_local):
+                return drop_future(out_local, "date")
+        except Exception:
+            pass
     url = "https://raw.githubusercontent.com/owid/co2-data/master/owid-co2-data.csv"
     resp = robust_get(url)
     df = pd.read_csv(io.StringIO(resp.text))
-    df = df[df["iso_code"] == "OWID_WRL"]
+    df = df[df["country"] == "World"]
     slim = df[["year", "co2"]].rename(columns={"year": "year", "co2": "value"}).dropna()
     slim["date"] = pd.to_datetime(slim["year"].astype(int).astype(str) + "-12-31")
-    out = slim[["date", "value"]].sort_values("date")
+    out = slim[["date", "value", "year"]].sort_values("date")
     out = drop_future(out, "date").reset_index(drop=True)
-    return out.dropna().drop_duplicates()
+    try:
+        DATA_DIR.mkdir(exist_ok=True)
+        out.to_csv(LOCAL_CO2_WORLD, index=False)
+    except Exception:
+        pass
+    return out.dropna(subset=["value"]).drop_duplicates(subset=["date"])
 
 
 @st.cache_data(ttl=60 * 60)
@@ -233,6 +246,7 @@ DATA_DIR = APP_ROOT / "data"
 LOCAL_COUNTRY_TEMP = DATA_DIR / "country_temperature_annual.csv"
 LOCAL_PISA_SCORES = DATA_DIR / "pisa_scores_2006_2018.csv"
 LOCAL_GISTEMP_MONTHLY = DATA_DIR / "nasa_gistemp_global_monthly.csv"
+LOCAL_CO2_WORLD = DATA_DIR / "owid_world_co2_annual.csv"
 
 
 def _read_country_temperature_csv(csv_path: Path) -> pd.DataFrame:
@@ -709,47 +723,163 @@ with tab3:
                     fig_sc.update_layout(xaxis_title="평균기온(°C)", yaxis_title="학업 성취(점수)")
                     st.plotly_chart(fig_sc, use_container_width=True)
 
+
 with tab4:
-    st.subheader("사용자 입력 대시보드 (설명 기반)")
-    with st.expander("설명 전문 보기", expanded=False):
-        st.write(DESCRIPTION_TEXT)
+    st.subheader("사용자 입력 대시보드 (실제 데이터)")
+    st.caption("대한민국을 기본으로 선택하고, 필요하면 국가와 기간을 추가해 실측 데이터를 꺾은선으로 비교하세요.")
 
-    df_desc, df_desc_std = build_description_based_dataset()
-    metrics = ["전체"] + sorted(df_desc["지표"].unique().tolist())
-    sel_metric = st.selectbox("지표 필터", metrics, index=0)
-    show_sankey = st.checkbox("관계 흐름(상키) 보기", value=True)
+    try:
+        temp_all = load_country_temperature_change()
+        pisa_all = load_pisa_scores()
+    except Exception as e:
+        st.error(f"데이터 로드 실패: {e}")
+        temp_all, pisa_all = None, None
 
-    if sel_metric != "전체":
-        view_df = df_desc[df_desc["지표"] == sel_metric].copy()
+    if temp_all is None or pisa_all is None or temp_all.empty or pisa_all.empty:
+        st.warning("기본 데이터가 준비되지 않아 대시보드를 표시할 수 없습니다.")
     else:
-        view_df = df_desc.copy()
+        subjects = sorted(pisa_all["subject"].dropna().unique().tolist())
+        default_subject_index = subjects.index("Maths") if "Maths" in subjects else 0
+        sel_subject = st.selectbox("PISA 과목 선택", subjects, index=default_subject_index)
 
-    fig_bar = px.bar(
-        view_df.sort_values("강도점수"),
-        x="강도점수",
-        y="연구",
-        color="지표",
-        orientation="h",
-        title="설명 기반 정성적 강도(낮음=1, 보통=2, 높음=3)",
-        text="강도",
-    )
-    fig_bar.update_layout(xaxis_title="강도점수(정성)", yaxis_title="연구")
-    st.plotly_chart(fig_bar, use_container_width=True)
-
-    if show_sankey:
-        labels = ["기온 상승", "수면시간 감소", "수면질 저하", "학습 효율 저하", "성적 하락"]
-        idx = {l: i for i, l in enumerate(labels)}
-        sources = [idx["기온 상승"], idx["기온 상승"], idx["수면시간 감소"], idx["수면질 저하"], idx["학습 효율 저하"]]
-        targets = [idx["수면시간 감소"], idx["수면질 저하"], idx["학습 효율 저하"], idx["학습 효율 저하"], idx["성적 하락"]]
-        values = [1, 1, 1, 1, 1]
-        sankey_fig = go.Figure(
-            data=[go.Sankey(node=dict(label=labels, pad=15, thickness=20), link=dict(source=sources, target=targets, value=values))]
+        pisa_filtered = (
+            pisa_all[pisa_all["subject"] == sel_subject][["entity", "year", "score"]]
+            .rename(columns={"score": "pisa_score"})
+            .copy()
         )
-        sankey_fig.update_layout(title="설명 기반 영향 흐름")
-        st.plotly_chart(sankey_fig, use_container_width=True)
+        pisa_filtered["entity"] = pisa_filtered["entity"].astype(str)
+        pisa_filtered["year"] = pd.to_numeric(pisa_filtered["year"], errors="coerce").astype("Int64")
+        pisa_filtered = pisa_filtered.dropna(subset=["entity", "year", "pisa_score"])
 
-    st.subheader("설명 기반 표준화 데이터 다운로드")
-    download_button_for_df(df_desc_std, "CSV 다운로드(설명 기반 표준화)", "description_based_standardized.csv")
+        temp_filtered = temp_all[["entity", "year", "value"]].rename(columns={"value": "temp"}).copy()
+        temp_filtered["entity"] = temp_filtered["entity"].astype(str)
+        temp_filtered["year"] = pd.to_numeric(temp_filtered["year"], errors="coerce").astype("Int64")
+        temp_filtered = temp_filtered.dropna(subset=["entity", "year", "temp"])
+
+        merged_user = pd.merge(temp_filtered, pisa_filtered, on=["entity", "year"], how="inner")
+        if merged_user.empty:
+            st.warning("선택한 과목에 대한 기온·성취 결합 데이터가 없습니다. 다른 과목을 선택하세요.")
+        else:
+            countries = sorted(merged_user["entity"].unique().tolist())
+            default_countries = ["South Korea"] if "South Korea" in countries else countries[:1]
+            sel_countries = st.multiselect(
+                "국가 선택 (기본: 대한민국)",
+                countries,
+                default=default_countries,
+                key="user_line_countries",
+            )
+
+            if sel_countries:
+                merged_user = merged_user[merged_user["entity"].isin(sel_countries)].copy()
+
+            if merged_user.empty:
+                st.info("선택된 국가에 사용 가능한 데이터가 없습니다.")
+            else:
+                year_min = int(merged_user["year"].min())
+                year_max = int(merged_user["year"].max())
+                if year_min == year_max:
+                    year_range = (year_min, year_max)
+                else:
+                    default_start = max(year_min, year_max - 10)
+                    year_range = st.slider(
+                        "연도 범위",
+                        min_value=year_min,
+                        max_value=year_max,
+                        value=(default_start, year_max),
+                    )
+                    merged_user = merged_user[(merged_user["year"] >= year_range[0]) & (merged_user["year"] <= year_range[1])]
+
+                if merged_user.empty:
+                    st.info("선택한 기간에 데이터가 없습니다. 범위를 다시 설정하세요.")
+                else:
+                    chart_mode = st.radio(
+                        "그래프 유형",
+                        ["평균기온(°C)", "학업 성취 점수", "기온·성취 이중축"],
+                        index=2,
+                    )
+
+                    palette = px.colors.qualitative.Plotly
+                    fig = go.Figure()
+
+                    if chart_mode == "평균기온(°C)":
+                        for idx, country in enumerate(sel_countries):
+                            country_df = merged_user[merged_user["entity"] == country].sort_values("year")
+                            if len(country_df) < 2:
+                                continue
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=country_df["year"],
+                                    y=country_df["temp"],
+                                    name=f"{country} 기온",
+                                    mode="lines+markers",
+                                    line=dict(color=palette[idx % len(palette)]),
+                                )
+                            )
+                        fig.update_layout(
+                            title="평균기온 꺾은선",
+                            xaxis_title="연도",
+                            yaxis_title="평균기온(°C)",
+                        )
+                    elif chart_mode == "학업 성취 점수":
+                        for idx, country in enumerate(sel_countries):
+                            country_df = merged_user[merged_user["entity"] == country].sort_values("year")
+                            if len(country_df) < 2:
+                                continue
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=country_df["year"],
+                                    y=country_df["pisa_score"],
+                                    name=f"{country} 성취",
+                                    mode="lines+markers",
+                                    line=dict(color=palette[idx % len(palette)]),
+                                )
+                            )
+                        fig.update_layout(
+                            title=f"PISA {sel_subject} 점수 꺾은선",
+                            xaxis_title="연도",
+                            yaxis_title="점수",
+                        )
+                    else:
+                        for idx, country in enumerate(sel_countries):
+                            country_df = merged_user[merged_user["entity"] == country].sort_values("year")
+                            if len(country_df) < 2:
+                                continue
+                            color_temp = palette[(2 * idx) % len(palette)]
+                            color_score = palette[(2 * idx + 1) % len(palette)]
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=country_df["year"],
+                                    y=country_df["temp"],
+                                    name=f"{country} 기온",
+                                    mode="lines+markers",
+                                    line=dict(color=color_temp),
+                                )
+                            )
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=country_df["year"],
+                                    y=country_df["pisa_score"],
+                                    name=f"{country} 성취",
+                                    mode="lines+markers",
+                                    yaxis="y2",
+                                    line=dict(color=color_score, dash="dash"),
+                                )
+                            )
+                        fig.update_layout(
+                            title=f"기온·학업 성취 이중축 꺾은선 (과목: {sel_subject})",
+                            xaxis_title="연도",
+                            yaxis=dict(title="평균기온(°C)", side="left"),
+                            yaxis2=dict(title="학업 성취 점수", overlaying="y", side="right"),
+                        )
+
+                    if not fig.data:
+                        st.info("표시할 데이터가 충분하지 않습니다. 국가/기간을 조정해 주세요.")
+                    else:
+                        fig.update_layout(legend=dict(orientation="h", y=-0.2))
+                        st.plotly_chart(fig, use_container_width=True)
+
+                    st.caption(f"선택된 데이터 포인트: {len(merged_user)}개")
+
 
 st.markdown(
     """
