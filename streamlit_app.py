@@ -602,6 +602,57 @@ with tab3:
             edu["score"] = pd.to_numeric(edu["score"], errors="coerce")
             edu = edu.dropna(subset=["entity", "year", "score"]).copy()
 
+            merged_all = pd.merge(
+                df_temp_c[["entity", "year", "value"]],
+                edu,
+                on=["entity", "year"],
+                how="inner",
+            ).rename(columns={"value": "temp"})
+
+            if len(merged_all):
+                countries = sorted(merged_all["entity"].unique().tolist())
+                sel_country_line = st.selectbox(
+                    "꺾은선 그래프 국가 선택",
+                    countries,
+                    key="line_country",
+                )
+                country_df = merged_all[merged_all["entity"] == sel_country_line].sort_values("year")
+                if len(country_df) >= 2:
+                    fig_line = go.Figure()
+                    fig_line.add_trace(
+                        go.Scatter(
+                            x=country_df["year"],
+                            y=country_df["temp"],
+                            name="평균기온(°C)",
+                            mode="lines+markers",
+                            line=dict(color="#FF6B6B"),
+                        )
+                    )
+                    fig_line.add_trace(
+                        go.Scatter(
+                            x=country_df["year"],
+                            y=country_df["score"],
+                            name="학업 성취 점수",
+                            mode="lines+markers",
+                            yaxis="y2",
+                            line=dict(color="#4E79A7"),
+                        )
+                    )
+                    fig_line.update_layout(
+                        title=f"{sel_country_line} 연도별 기온·학업 성취 추이",
+                        xaxis_title="연도",
+                        yaxis=dict(title="평균기온(°C)", side="left"),
+                        yaxis2=dict(
+                            title="학업 성취 점수",
+                            overlaying="y",
+                            side="right",
+                        ),
+                        legend=dict(orientation="h", y=-0.2),
+                    )
+                    st.plotly_chart(fig_line, use_container_width=True)
+                else:
+                    st.info("선택한 국가의 데이터가 2개 미만입니다. 다른 국가를 선택하세요.")
+
             # 연도 범위 선택
             if df_temp_c is not None and len(df_temp_c) and len(edu):
                 y_min = int(max(edu["year"].min(), df_temp_c["year"].min()))
