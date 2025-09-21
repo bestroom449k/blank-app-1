@@ -511,10 +511,11 @@ with tab3:
         csv_files = [f for f in os.listdir(dl_dir)] if os.path.isdir(dl_dir) else []
         csv_files = [f for f in csv_files if f.lower().endswith(".csv")]
         up_alt = st.file_uploader("(대안) 교육 성취 CSV 직접 업로드", type=["csv"], accept_multiple_files=False)
+        df_edu_raw: Optional[pd.DataFrame] = None
+
         if not csv_files and up_alt is None:
             st.info("kaggle_data 폴더에 CSV가 없습니다. Kaggle 탭에서 먼저 다운로드하거나, 위에 CSV를 업로드하세요.")
         else:
-            df_edu_raw = None
             if up_alt is not None:
                 try:
                     df_edu_raw = pd.read_csv(up_alt)
