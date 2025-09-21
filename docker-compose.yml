@@ -5,6 +5,13 @@ services:
       dockerfile: Dockerfile
     container_name: blankapp_streamlit
     environment:
-      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_PORT=${STREAMLIT_SERVER_PORT:-8501}
+      - KAGGLE_USERNAME=${KAGGLE_USERNAME:-}
+      - KAGGLE_KEY=${KAGGLE_KEY:-}
+      - KAGGLE_CONFIG_DIR=/root/.kaggle
+    volumes:
+      - ./kaggle_data:/app/kaggle_data
+      # Mount your Kaggle API file if you prefer file-based auth
+      # - ./Kaggle.json:/root/.kaggle/kaggle.json:ro
     ports:
-      - "8501:8501"
+      - "${HOST_STREAMLIT_PORT:-8501}:8501"

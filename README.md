@@ -37,6 +37,7 @@ The app includes a Kaggle tab (visible when the `kaggle` package is installed) f
 
 1) Credentials
    - EITHER upload `kaggle.json` in the Kaggle tab, OR set environment variables `KAGGLE_USERNAME` and `KAGGLE_KEY`.
+   - Docker Compose: copy `.env.example` to `.env` and fill `KAGGLE_USERNAME`/`KAGGLE_KEY`, or export them before `docker compose up`.
    - You may also place `Kaggle.json` at the repo root; the app copies it to `.kaggle/kaggle.json` automatically.
    - On Linux/macOS you can instead place at `~/.kaggle/kaggle.json` with permissions 600.
 
