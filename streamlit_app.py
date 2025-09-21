@@ -187,9 +187,23 @@ def load_noaa_mlo_co2_monthly() -> pd.DataFrame:
     return out.dropna().drop_duplicates()
 
 
+def _read_gistemp_csv(csv_path: Path) -> pd.DataFrame:
+    df = pd.read_csv(csv_path, parse_dates=["date"])
+    if not {"date", "value"}.issubset(df.columns):
+        raise RuntimeError("GISTEMP CSV 형식이 올바르지 않습니다.")
+    df["value"] = pd.to_numeric(df["value"], errors="coerce")
+    out = df.dropna(subset=["date", "value"]).sort_values("date").reset_index(drop=True)
+    return drop_future(out, "date")
+
+
 @st.cache_data(ttl=60 * 60)
 def load_nasa_gistemp_monthly_global() -> pd.DataFrame:
     # NASA GISTEMP v4 전지구 월별 기온 이상(°C)
+    if LOCAL_GISTEMP_MONTHLY.exists():
+        try:
+            return _read_gistemp_csv(LOCAL_GISTEMP_MONTHLY)
+        except Exception:
+            pass
     url = "https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.csv"
     resp = robust_get(url)
     raw = pd.read_csv(io.StringIO(resp.text), skiprows=1)
@@ -206,6 +220,11 @@ def load_nasa_gistemp_monthly_global() -> pd.DataFrame:
     df["date"] = pd.to_datetime(df["Year"].astype(int).astype(str) + "-" + df["month_num"].astype(int).astype(str) + "-15")
     out = df.dropna(subset=["anomaly"])[["date", "anomaly"]].rename(columns={"anomaly": "value"}).sort_values("date")
     out = drop_future(out, "date").reset_index(drop=True)
+    try:
+        DATA_DIR.mkdir(exist_ok=True)
+        out.to_csv(LOCAL_GISTEMP_MONTHLY, index=False)
+    except Exception:
+        pass
     return out.dropna().drop_duplicates()
 
 
@@ -213,6 +232,7 @@ APP_ROOT = Path(__file__).resolve().parent
 DATA_DIR = APP_ROOT / "data"
 LOCAL_COUNTRY_TEMP = DATA_DIR / "country_temperature_annual.csv"
 LOCAL_PISA_SCORES = DATA_DIR / "pisa_scores_2006_2018.csv"
+LOCAL_GISTEMP_MONTHLY = DATA_DIR / "nasa_gistemp_global_monthly.csv"
 
 
 def _read_country_temperature_csv(csv_path: Path) -> pd.DataFrame:

@@ -40,9 +40,12 @@ The app includes a Kaggle tab (visible when the `kaggle` package is installed) f
    - Docker Compose: copy `.env.example` to `.env` and fill `KAGGLE_USERNAME`/`KAGGLE_KEY`, or export them before `docker compose up`.
    - You may also place `Kaggle.json` at the repo root; the app copies it to `.kaggle/kaggle.json` automatically.
    - On Linux/macOS you can instead place at `~/.kaggle/kaggle.json` with permissions 600.
-   - 빠른 시작을 위해 Berkeley Earth의 연도별 국가 평균기온을 전처리한 `data/country_temperature_annual.csv`를 포함했습니다 (CC-BY 라이선스). Kaggle 키 없이도 실제 데이터를 볼 수 있습니다.
-   - Kaggle 키를 제공하면 최신 데이터를 다운로드한 뒤 동일 경로에 캐시하여 자동 갱신합니다.
-   - PISA 학업 성취 분석을 바로 실행할 수 있도록 `data/pisa_scores_2006_2018.csv`를 포함했습니다 (Kaggle `prasertk/pisa-scores-20062018`, CC0). Kaggle을 연결하지 않아도 수학/과학/읽기 점수를 바로 선택해 사용할 수 있습니다.
+   - 빠른 시작을 위해 다음 실데이터를 포함했습니다.
+     - `data/nasa_gistemp_global_monthly.csv`: NASA GISTEMP 전지구 월별 기온 이상(°C, CC BY 3.0)
+     - `data/country_temperature_annual.csv`: Berkeley Earth 국가별 연도 평균기온 (CC-BY)
+     - `data/pisa_scores_2006_2018.csv`: Kaggle `prasertk/pisa-scores-20062018`에서 전처리한 PISA 점수 (CC0)
+     Kaggle 키 없이도 실제 데이터를 바로 확인할 수 있으며, Kaggle 인증을 제공하면 최신 데이터로 자동 갱신됩니다.
+   - Kaggle 키를 제공하면 해당 경로에 최신 데이터를 캐시하여 자동 갱신합니다.
 
 2) Use in the app
    - Open the Kaggle tab, enter a dataset slug like `owner/dataset` (e.g., `zynicide/wine-reviews`).
