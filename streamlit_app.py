@@ -494,20 +494,20 @@ with tab3:
         if not csv_files and up_alt is None:
             st.info("kaggle_data 폴더에 CSV가 없습니다. Kaggle 탭에서 먼저 다운로드하거나, 위에 CSV를 업로드하세요.")
         else:
-        df_edu_raw = None
-        if up_alt is not None:
-            try:
-                df_edu_raw = pd.read_csv(up_alt)
-            except Exception as e:
-                st.error(f"업로드 CSV 읽기 실패: {e}")
-        else:
-            sel_file = st.selectbox("학업 성취 CSV 선택", csv_files)
-            edu_path = os.path.join(dl_dir, sel_file)
-            try:
-                df_edu_raw = pd.read_csv(edu_path)
-            except Exception as e:
-                st.error(f"CSV 읽기 실패: {e}")
-                df_edu_raw = None
+            df_edu_raw = None
+            if up_alt is not None:
+                try:
+                    df_edu_raw = pd.read_csv(up_alt)
+                except Exception as e:
+                    st.error(f"업로드 CSV 읽기 실패: {e}")
+            else:
+                sel_file = st.selectbox("학업 성취 CSV 선택", csv_files)
+                edu_path = os.path.join(dl_dir, sel_file)
+                try:
+                    df_edu_raw = pd.read_csv(edu_path)
+                except Exception as e:
+                    st.error(f"CSV 읽기 실패: {e}")
+                    df_edu_raw = None
         if df_edu_raw is not None:
             st.write("행/열:", df_edu_raw.shape)
             st.dataframe(df_edu_raw.head(50))
