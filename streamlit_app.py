@@ -1027,3 +1027,4 @@ if KAGGLE_AVAILABLE and rest:
                 st.info("kaggle_data 폴더에 CSV 파일이 없습니다. 먼저 다운로드하세요.")
         else:
             st.info("아직 다운로드 폴더가 없습니다. 먼저 데이터셋을 다운로드하세요.")
+
