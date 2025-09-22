@@ -601,9 +601,37 @@ with tab3:
 
         if df_edu_raw is not None:
             cols = df_edu_raw.columns.tolist()
-            col_country = st.selectbox("국가 열", cols)
-            col_year = st.selectbox("연도 열", cols)
-            col_score = st.selectbox("성취도(숫자) 열", cols)
+
+            def detect_col(candidates: set[str], fallback: str) -> str:
+                lower_map = {c.lower(): c for c in cols}
+                for cand in candidates:
+                    if cand.lower() in lower_map:
+                        return lower_map[cand.lower()]
+                return fallback if fallback in cols else cols[0]
+
+            country_candidates = {"country", "국가", "nation", "entity"}
+            year_candidates = {"year", "연도", "년도"}
+            score_candidates = {"score", "점수", "value", "성취", "achievement"}
+
+            default_country_col = detect_col(country_candidates, "country")
+            default_year_col = detect_col(year_candidates, "year")
+            default_score_col = detect_col(score_candidates, "score")
+
+            col_country = st.selectbox(
+                "국가 열",
+                cols,
+                index=cols.index(default_country_col) if default_country_col in cols else 0,
+            )
+            col_year = st.selectbox(
+                "연도 열",
+                cols,
+                index=cols.index(default_year_col) if default_year_col in cols else 0,
+            )
+            col_score = st.selectbox(
+                "성취도(숫자) 열",
+                cols,
+                index=cols.index(default_score_col) if default_score_col in cols else 0,
+            )
 
             # 전처리
             edu = df_edu_raw[[col_country, col_year, col_score]].copy()
@@ -631,13 +659,25 @@ with tab3:
 
             if len(merged_all):
                 countries = sorted(merged_all["entity"].unique().tolist())
-                default_country = "South Korea" if "South Korea" in countries else countries[:1]
-                default_selection = [default_country] if isinstance(default_country, str) else default_country
+
+                if "South Korea" in countries:
+                    default_selection = ["South Korea"]
+                    for candidate in ["Japan", "United States", "China (B-S-J-G)", "Finland", "Germany"]:
+                        if candidate in countries and candidate not in default_selection:
+                            default_selection.append(candidate)
+                    if len(default_selection) < min(4, len(countries)):
+                        default_selection.extend(
+                            [c for c in countries if c not in default_selection][: max(0, 4 - len(default_selection))]
+                        )
+                else:
+                    default_selection = countries[: min(4, len(countries))]
+
                 sel_countries = st.multiselect(
-                    "꺾은선 그래프에 표시할 국가 (기본: 대한민국)",
+                    "꺾은선 그래프에 표시할 국가",
                     countries,
                     default=default_selection,
                     key="line_countries",
+                    help="국가를 여러 개 선택해 기온과 학업 성취 추이를 비교하세요.",
                 )
                 line_df = merged_all[merged_all["entity"].isin(sel_countries)].sort_values(["entity", "year"])
                 if len(line_df) >= 2 and sel_countries:
